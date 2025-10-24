@@ -1,5 +1,4 @@
 #include "raylib.h"
-#define WHITE CLITERAL(color) {245, 245, 245, 255};
 
 int main(void){
 
@@ -7,34 +6,37 @@ int main(void){
     const int screenWidth = 1280;
     const int screenHeight = 960;
     
+    //nome da janela gerada
+    InitWindow(screenWidth,screenHeight, "Projeto");
+    
+    
     //imagem de fundo
-    Image fundo = LoadImage("imagem/IMAGEM3.png");
-    ImageResize(&fundo, 1280, 960);
-
-    Texture2D background = LoadTexture("imagem/follen.jpeg");
-    Texture2D midground = LoadTexture("imagem/follen.jpeg");
-    Texture2D foreground = LoadTexture("imagem/follen.jpeg");
-
-
-
+    Image background1 = LoadImage("imagem/follen.jpeg");
+    ImageResize(&background1, screenWidth, screenHeight);
+    
+    Texture2D background = LoadTexture("Imagem/follen.jpeg");
+    
+    
     SetTargetFPS(60);//fps set para melhor estabilidade
-    GetMousePosition();
+    //GetMousePosition();
 
     while (!WindowShouldClose()){
 
         //draw
         BeginDrawing();
             //desenha a saida(draw out)
-            DrawTexture(background, 1280, 960, (GetColor(0x052c46ff)));
-
-
-
-
-    }//enquanto o programa estiver aberto
-    
-    UnloadImage(fundo);
-    UnloadTexture(background);
-
+            ClearBackground(RAYWHITE);
+            DrawText("PAU GELADO", 720,320,20,BLACK);
+            DrawTexture(background,0,0,RAYWHITE);
+            
+            EndDrawing();
+            
+            
+        }//enquanto o programa estiver aberto
+        
+        UnloadImage(background1);
+        UnloadTexture(background);
+        
     CloseWindow();//quando for fechada a janela
 
     return 0;
