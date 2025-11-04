@@ -27,10 +27,15 @@
 ********************************************************************************************/
 
 #include "raylib.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX(a, b) ((a)>(b)? (a) : (b))
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
+
+typedef enum telaAtual {MENU, ESCOLHATIMES, ESCOLHAPLAYERS} telaAtual;
+
 int main(void)
 {
     // Initialization
@@ -38,9 +43,11 @@ int main(void)
     const int screenWidth = 1280;
     const int screenHeight = 960;
 
+    InitAudioDevice();      // Initialize audio device
     InitWindow(screenWidth, screenHeight, "bad fallen");
-    Texture2D menu = LoadTexture("fallen.jpg");
-    
+    Texture2D menu = LoadTexture("imagens/fallen.jpg");
+    Sound fxButton = LoadSound("audio/selecao.wav"); 
+
     //centralizar o texto "times" no eixo x
     int larguraJanela = GetScreenWidth();
     int larguraTexto1 = MeasureText("TIMES", 35);
@@ -49,49 +56,110 @@ int main(void)
     //centralizar o texto "players" no eixo x;
     int larguraTexto2 = MeasureText("PLAYERS", 35);
     int x2 = (larguraJanela - larguraTexto2) / 2;
+    telaAtual telaJogo = MENU;
 
-    SetTargetFPS(144);               // Set our game to run at 144 frames-per-second
+    //checa estado do botao
+    bool estadoBotao1 = 0; //0 - desativado, 1 - mouse em cima, 2 - apertado
+    bool estadoBotao2 = 0;
+    //bool botaoApertado = false;
+    
+    Vector2 ponteiroMouse = {0.0f, 0.0f};
+    Rectangle botao1 = {565, screenHeight*0.45, 150, 70};
+    Rectangle botao2 = {540, screenHeight* 0.58, 200, 70};
+
+    SetTargetFPS(60);               // Set our game to run at 144 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
+        ponteiroMouse = GetMousePosition();
+
+        
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
         //----------------------------------------------------------------------------------
 
+        // --- BOTÃO 1 (TIMES) ---
+        if (CheckCollisionPointRec(ponteiroMouse, botao1))
+        {
+            estadoBotao1 = 1;
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                estadoBotao1 = 2;
+                PlaySound(fxButton);
+                telaJogo = ESCOLHATIMES; // muda pra tela dos times
+            }
+        }
+        else estadoBotao1 = 0;
+
+        // --- BOTÃO 2 (PLAYERS) ---
+        if (CheckCollisionPointRec(ponteiroMouse, botao2))
+        {
+            estadoBotao2 = 1;
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                estadoBotao2 = 2;
+                PlaySound(fxButton);
+                telaJogo = ESCOLHAPLAYERS; // muda pra tela dos players
+            }
+        }
+        else estadoBotao2 = 0;
+        
+        
+
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
-
+            Color textoBotao1 = (estadoBotao1 > 0) ? WHITE : RED;
+            Color textoBotao2 = (estadoBotao2 > 0) ? WHITE : RED;
             ClearBackground(RAYWHITE);
 
-            //faz a imagem cobrir a janela toda
-            DrawTexturePro(menu,
-                           (Rectangle){ 0, 0, menu.width, menu.height },
-                           (Rectangle){ 0, 0, screenWidth, screenHeight },
-                           (Vector2){ 0, 0 }, 0.0f, WHITE);
+            switch (telaJogo)
+            {
+            case MENU:
+                //faz a imagem cobrir a janela toda
+                DrawTexturePro(menu,
+                            (Rectangle){ 0, 0, menu.width, menu.height },
+                            (Rectangle){ 0, 0, screenWidth, screenHeight },
+                            (Vector2){ 0, 0 }, 0.0f, WHITE);
 
-            //retangulo redondo pra ficar em volta do texto do menu
-            DrawRectangleRounded((Rectangle){565, screenHeight*0.45, 150, 70}, 2, 3, BLACK);
-            DrawRectangleRounded((Rectangle){565, screenHeight* 0.55, 200, 70}, 2, 3, BLACK);
+                //retangulo redondo pra ficar em volta do texto do menu
+                DrawRectangleRounded((Rectangle)botao1, 2, 3, BLACK);
+                DrawRectangleRounded((Rectangle)botao2, 2, 3, BLACK);
 
-            //texto do menu
-            DrawText("BAD FALLEN", 430, screenHeight*0.25, 75, RED);
-            DrawText("TIMES", x1, screenHeight*0.4723, 35, RED);
-            DrawText("PLAYERS", x2, screenHeight*0.6, 35, RED);
+                //texto do menu
+                DrawText("BAD FALLEN", 430, screenHeight*0.25, 75, RED);
+                DrawText("TIMES", x1, screenHeight*0.4723, 35, textoBotao1);
+                DrawText("PLAYERS", x2, screenHeight*0.6, 35, textoBotao2);
+                break;
+            
+            case ESCOLHATIMES:
+                ClearBackground(BLACK);
+                DrawText("Digite um time:", 30, 40, 45, LIGHTGRAY);
 
+            case ESCOLHAPLAYERS:
+                ClearBackground(BLACK);
+                DrawText("Digite um player:", 30, 40, 45, LIGHTGRAY);
+            default:
+                break;
+            }
+
+            
+
+            DrawFPS(0,1);
 
             EndDrawing();
         //----------------------------------------------------------------------------------
     }
-
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    UnloadTexture(menu);
-    CloseWindow();        // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
-
-    return 0;
+        // De-Initialization
+        //--------------------------------------------------------------------------------------
+        UnloadSound(fxButton);
+        UnloadTexture(menu);
+        CloseWindow();        // Close window and OpenGL context
+        //--------------------------------------------------------------------------------------
+        
+        return 0;
+        
 }
