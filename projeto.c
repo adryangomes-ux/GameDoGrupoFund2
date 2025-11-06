@@ -58,14 +58,20 @@ int main(void)
     int x2 = (larguraJanela - larguraTexto2) / 2;
     telaAtual telaJogo = MENU;
 
+    //centralizar o titulo do jogo
+    int larguraTextoMenu = MeasureText("BAD FALLEN", 75);
+    int xMenu = (larguraJanela - larguraTextoMenu) / 2;
+
     //checa estado do botao
     bool estadoBotao1 = 0; //0 - desativado, 1 - mouse em cima, 2 - apertado
     bool estadoBotao2 = 0;
+    bool estadoBotaoVoltar = 0;
     //bool botaoApertado = false;
     
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {565, screenHeight*0.45, 150, 70};
     Rectangle botao2 = {540, screenHeight* 0.58, 200, 70};
+    Rectangle botaoVoltar = {970, 870, 200, 70};
 
     SetTargetFPS(60);               // Set our game to run at 144 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -107,13 +113,27 @@ int main(void)
         }
         else estadoBotao2 = 0;
         
-        
+        //botao de voltar
+        if (CheckCollisionPointRec(ponteiroMouse, botaoVoltar))
+        {
+            estadoBotaoVoltar = 1;
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                estadoBotaoVoltar = 2;
+                PlaySound(fxButton);
+                telaJogo = MENU;
+            } 
+        }
+        else estadoBotaoVoltar = 0;
+
+
 
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
             Color textoBotao1 = (estadoBotao1 > 0) ? WHITE : RED;
             Color textoBotao2 = (estadoBotao2 > 0) ? WHITE : RED;
+            Color textoBotaoVoltar = (estadoBotaoVoltar > 0) ? WHITE : RED;
             ClearBackground(RAYWHITE);
 
             switch (telaJogo)
@@ -130,29 +150,34 @@ int main(void)
                 DrawRectangleRounded((Rectangle)botao2, 2, 3, BLACK);
 
                 //texto do menu
-                DrawText("BAD FALLEN", 430, screenHeight*0.25, 75, RED);
+                DrawText("BAD FALLEN", xMenu, screenHeight*0.25, 75, RED);
                 DrawText("TIMES", x1, screenHeight*0.4723, 35, textoBotao1);
                 DrawText("PLAYERS", x2, screenHeight*0.6, 35, textoBotao2);
                 break;
             
             case ESCOLHATIMES:
-                ClearBackground(BLACK);
-                DrawText("Digite um time:", 30, 40, 45, LIGHTGRAY);
+                ClearBackground(RAYWHITE);//muda background pra branco
+                DrawText("Digite um time: ", 30, 40, 45, LIGHTGRAY);
+                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
+                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);    
+                break;
 
             case ESCOLHAPLAYERS:
-                ClearBackground(BLACK);
-                DrawText("Digite um player:", 30, 40, 45, LIGHTGRAY);
+                ClearBackground(RAYWHITE);//muda background pra branco
+                DrawText("Digite um jogador: ", 30, 40, 45, LIGHTGRAY);//desenha o texto na posicao fornecida
+                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);//desenha um retangulo arredondado na posicao fornecida
+                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);//desenha o texto na posicao fornecida    
+                break;
+
             default:
                 break;
-            }
-
             
-
+            }//switch
             DrawFPS(0,1);
 
             EndDrawing();
         //----------------------------------------------------------------------------------
-    }
+    }//while
         // De-Initialization
         //--------------------------------------------------------------------------------------
         UnloadSound(fxButton);
@@ -162,4 +187,4 @@ int main(void)
         
         return 0;
         
-}
+}//make
