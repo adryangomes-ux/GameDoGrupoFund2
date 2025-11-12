@@ -31,11 +31,32 @@
 #include <stdlib.h>
 #include <string.h>
 #define MAX(a, b) ((a)>(b)? (a) : (b))
+
+#define MAX_LINHAS 50
+#define MAX_COLUNAS 5
+#define MAX_TEXTO 128
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
 
 typedef enum telaAtual {MENU, ESCOLHATIMES, ESCOLHAPLAYERS} telaAtual;
+
+
+
+typedef struct {
+    char time[MAX_TEXTO];
+    char pais[MAX_TEXTO];
+    char jogador[MAX_TEXTO];
+    char destaque[MAX_TEXTO];
+    char dica[MAX_TEXTO];
+} TimeCSV;
+
+
+
+
+
+
+
 
 int main(void)
 {
@@ -55,8 +76,6 @@ int main(void)
     int x1 = (larguraJanela - larguraTexto1) / 2;
 
     //centralizar o texto "players" no eixo x;
-    int larguraTexto2 = MeasureText("PLAYERS", 35);
-    int x2 = (larguraJanela - larguraTexto2) / 2;
     telaAtual telaJogo = MENU;
 
     //centralizar o titulo do jogo
@@ -65,18 +84,70 @@ int main(void)
 
     //checa estado do botao
     bool estadoBotao1 = 0; //0 - desativado, 1 - mouse em cima, 2 - apertado
-    bool estadoBotao2 = 0;
+
     bool estadoBotaoVoltar = 0;
     //bool botaoApertado = false;
-    
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {565, screenHeight*0.45, 150, 70};
-    Rectangle botao2 = {540, screenHeight* 0.58, 200, 70};
     Rectangle botaoVoltar = {970, 870, 200, 70};
 
+
+
+
+
     //Armazenar texto salvo
-    char times[21] = "\0";
-    int posChar = 0; //posição atual no buffer
+    //int count = 0; //contador
+    int pos = 0; //posição atual no buffer
+    int count = 0;
+    
+    TimeCSV timesCode[MAX_TEXTO];//para poder ler o arquivo csv
+    char times[MAX_TEXTO] = "\0";
+    
+    FILE *arquivo = fopen("arquivos/TimesDicas.csv", "r");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo CSV!\n");
+        CloseWindow();
+        return 1;
+    }//caso der erro
+
+    char linha[512];
+    fgets(linha, sizeof(linha), arquivo); // Ignora o cabeçalho
+
+    // Lê linha por linha
+    while (fgets(linha, sizeof(linha), arquivo) && count < MAX_LINHAS) {
+        // Remove quebra de linha
+        linha[strcspn(linha, "\r\n")] = 0;
+
+        // Quebra a linha em colunas
+        char *token = strtok(linha, ",");
+        int coluna = 0;
+
+        while (token != NULL && coluna < MAX_COLUNAS) {
+            switch (coluna) {
+                case 0: strncpy(timesCode[count].time, token, MAX_TEXTO); break;
+                case 1: strncpy(timesCode[count].pais, token, MAX_TEXTO); break;
+                case 2: strncpy(timesCode[count].jogador, token, MAX_TEXTO); break;
+                case 3: strncpy(timesCode[count].destaque, token, MAX_TEXTO); break;
+                case 4: strncpy(timesCode[count].dica, token, MAX_TEXTO); break;
+            }
+            token = strtok(NULL, ",");
+            coluna++;
+        }
+        count++;
+    }
+
+    fclose(arquivo);
+
+
+
+
+
+
+
+
+
+
+
 
     //------------------------------------------------------------------------//
 
@@ -106,20 +177,6 @@ int main(void)
             }
         }
         else estadoBotao1 = 0;
-
-        // --- BOTÃO 2 (PLAYERS) ---
-        if (CheckCollisionPointRec(ponteiroMouse, botao2))
-        {
-            estadoBotao2 = 1;
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-            {
-                estadoBotao2 = 2;
-                PlaySound(fxButton);
-                telaJogo = ESCOLHAPLAYERS; // muda pra tela dos players
-            }
-        }
-        else estadoBotao2 = 0;
-        
         //botao de voltar
         if (CheckCollisionPointRec(ponteiroMouse, botaoVoltar))
         {
@@ -173,10 +230,10 @@ int main(void)
                 int tecla = GetCharPressed();
 
                 while (tecla > 0){
-                    if ((tecla >= 32) && (tecla <=125) && (posChar < 22)){
-                        times[posChar] = (char)tecla;
-                        posChar++;
-                        times[posChar] = '\0';
+                    if ((tecla >= 32) && (tecla <=125) && (pos < 22)){
+                        times[pos] = (char)tecla;
+                        pos++;
+                        times[pos] = '\0';
                     }//if 
                     
                     tecla = GetCharPressed();
@@ -185,10 +242,17 @@ int main(void)
                 
                 //apagar com o Backspace
                 if (IsKeyPressed(KEY_BACKSPACE)){
-                    posChar--;
-                    if (posChar < 0) posChar = 0;
-                    times[posChar] = '\0'; 
+                    pos--;
+                    if (pos < 0) pos = 0;
+                    times[pos] = '\0'; 
                 }
+
+                int y = 80;
+                for (int i = 0; i < count; i++) {
+                DrawText(TextFormat("%2d. %s (%s) - %s", i + 1, timesCode[i].time, timesCode[i].pais, timesCode[i].jogador),60, y, 20, LIGHTGRAY);
+                y += 25;
+                if (y > GetScreenHeight() - 40) break; // Evita ultrapassar a tela
+        }
                 
                 
                 
