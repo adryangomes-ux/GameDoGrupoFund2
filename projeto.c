@@ -29,12 +29,26 @@
 #include "raylib.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX(a, b) ((a)>(b)? (a) : (b))
+#include <string.h>
+
+#define MAX_LINHAS 50
+#define MAX_COLUNAS 5
+#define MAX_TEXTO 128
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
 
-typedef enum telaAtual {MENU, ESCOLHATIMES, ESCOLHAPLAYERS} telaAtual;
+typedef enum telaAtual {MENU, ESCOLHADIFICULDADE,ESCOLHATIMES} telaAtual;
+typedef enum Dificuldade {FACIL=1, MEDIO, DIFICIL} Dificuldade;
+
+typedef struct {
+    char time[MAX_TEXTO];
+    char pais[MAX_TEXTO];
+    char jogador[MAX_TEXTO];
+    char destaque[MAX_TEXTO];
+    char dica[MAX_TEXTO];
+} TimeCSV;
+
 
 int main(void)
 {
@@ -47,33 +61,101 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "bad fallen");
     Texture2D menu = LoadTexture("imagens/fallen.jpg");
     Sound fxButton = LoadSound("audio/selecao.wav"); 
+    Sound acertarPrimeira = LoadSound("audio/grafite.wav");
+
 
     //centralizar o texto "times" no eixo x
     int larguraJanela = GetScreenWidth();
-    int larguraTexto1 = MeasureText("TIMES", 35);
+    int larguraTexto1 = MeasureText("PRESSIONE ESPAÇO PARA INICIAR", 35);
     int x1 = (larguraJanela - larguraTexto1) / 2;
 
-    //centralizar o texto "players" no eixo x;
-    int larguraTexto2 = MeasureText("PLAYERS", 35);
-    int x2 = (larguraJanela - larguraTexto2) / 2;
-    telaAtual telaJogo = MENU;
+    //centraliza os textos da tela de escolha de dificuldade
+    int larguraTextoDificuldade = MeasureText("ESCOLHA A DIFICULDADE", 60);
+    int xDificuldade = (larguraJanela - larguraTextoDificuldade) / 2;
+    int larguraTextoFacil = MeasureText("FÁCIL", 40);
+    int larguraTextoMedio = MeasureText("MÉDIO", 40);
+    int larguraTextoDificil = MeasureText("DIFÍCIL", 40);
+    int xFacil = (larguraJanela - larguraTextoFacil) / 2;
+    int xMedio = (larguraJanela - larguraTextoMedio) / 2;
+    int xDificil = (larguraJanela - larguraTextoDificil) / 2;
 
+
+    
     //centralizar o titulo do jogo
     int larguraTextoMenu = MeasureText("BAD FALLEN", 75);
-    int xMenu = (larguraJanela - larguraTextoMenu) / 2;
+    int xMenu = (larguraJanela - larguraTextoMenu) / 2;    
+    
+    
+    telaAtual telaJogo = MENU;
+    Dificuldade dificuldade;
 
     //checa estado do botao
     bool estadoBotao1 = 0; //0 - desativado, 1 - mouse em cima, 2 - apertado
-    bool estadoBotao2 = 0;
     bool estadoBotaoVoltar = 0;
-    //bool botaoApertado = false;
-    
-    Vector2 ponteiroMouse = {0.0f, 0.0f};
-    Rectangle botao1 = {565, screenHeight*0.45, 150, 70};
-    Rectangle botao2 = {540, screenHeight* 0.58, 200, 70};
-    Rectangle botaoVoltar = {970, 870, 200, 70};
+    bool estadoBotaoFacil = 0;
+    bool estadoBotaoMedio = 0;
+    bool estadoBotaoDificil = 0;
 
-    SetTargetFPS(60);               // Set our game to run at 144 frames-per-second
+    bool estadoMenu = false;
+    bool acertou = false;
+    bool enviar = false;
+
+    Vector2 ponteiroMouse = {0.0f, 0.0f};
+    Rectangle botao1 = {300, screenHeight*0.48, 680, 70};
+    Rectangle botaoVoltar = {970, 870, 200, 70};
+    Rectangle botaoFacil = {xFacil - 43, 230, 200, 70};
+    Rectangle botaoMedio = {xMedio - 38, 385, 200, 70};
+    Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
+
+
+    //Armazenar texto salvo
+    int count = 0; //contador
+    int contadorTentativa = 0;
+    int pos = 0; //posição atual no buffer
+    
+    TimeCSV timesCode[MAX_TEXTO];//para poder ler o arquivo csv
+    int indice = 16;
+    int indiceAleatorio = GetRandomValue(0, indice-1);
+    TimeCSV timeSorteado = timesCode[indiceAleatorio];
+    char escritaTimes[MAX_TEXTO] = "\0";
+    
+    FILE *arquivo = fopen("arquivos/TimesDicas.csv", "r");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo CSV!\n");
+        CloseWindow();
+        return 1;
+    }//caso der erro
+
+    char linha[512];
+    fgets(linha, sizeof(linha), arquivo); // Ignora o cabeçalho
+
+    // Lê linha por linha
+    while (fgets(linha, sizeof(linha), arquivo) && count < MAX_LINHAS) {
+        // Remove quebra de linha
+        linha[strcspn(linha, "\r\n")] = 0;
+
+        // Quebra a linha em colunas
+        char *token = strtok(linha, ",");
+        int coluna = 0;
+
+        while (token != NULL && coluna < MAX_COLUNAS) {
+            switch (coluna) {
+                case 0: strncpy(timesCode[count].time, token, MAX_TEXTO); break;
+                case 1: strncpy(timesCode[count].pais, token, MAX_TEXTO); break;
+                case 2: strncpy(timesCode[count].jogador, token, MAX_TEXTO); break;
+                case 3: strncpy(timesCode[count].destaque, token, MAX_TEXTO); break;
+                case 4: strncpy(timesCode[count].dica, token, MAX_TEXTO); break;
+            }
+            token = strtok(NULL, ",");
+            coluna++;
+        }
+        count++;
+    }
+
+    fclose(arquivo);
+
+
+    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -88,32 +170,17 @@ int main(void)
         //----------------------------------------------------------------------------------
 
         // --- BOTÃO 1 (TIMES) ---
-        if (CheckCollisionPointRec(ponteiroMouse, botao1))
+        if (IsKeyPressed(KEY_SPACE) && estadoMenu == false)
         {
+            estadoMenu = true;
             estadoBotao1 = 1;
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-            {
-                estadoBotao1 = 2;
-                PlaySound(fxButton);
-                telaJogo = ESCOLHATIMES; // muda pra tela dos times
-            }
+            PlaySound(fxButton);
+            telaJogo = ESCOLHADIFICULDADE;
         }
         else estadoBotao1 = 0;
-
-        // --- BOTÃO 2 (PLAYERS) ---
-        if (CheckCollisionPointRec(ponteiroMouse, botao2))
-        {
-            estadoBotao2 = 1;
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-            {
-                estadoBotao2 = 2;
-                PlaySound(fxButton);
-                telaJogo = ESCOLHAPLAYERS; // muda pra tela dos players
-            }
-        }
-        else estadoBotao2 = 0;
         
-        //botao de voltar
+        
+        //botao de voltar pro menu
         if (CheckCollisionPointRec(ponteiroMouse, botaoVoltar))
         {
             estadoBotaoVoltar = 1;
@@ -125,15 +192,114 @@ int main(void)
             } 
         }
         else estadoBotaoVoltar = 0;
+        
+
+        //BOTAO DIFICULDADE FACIL
+        if (CheckCollisionPointRec(ponteiroMouse, botaoFacil))
+        {
+            estadoBotaoFacil = 1;
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                estadoBotaoFacil = 2;
+                dificuldade = FACIL;
+                PlaySound(fxButton);
+                telaJogo = ESCOLHATIMES;
+            }
+            
+        }
+        else estadoBotaoFacil = 0;
+
+        //BOTAO DIFICULDADE MEDIA
+        if (CheckCollisionPointRec(ponteiroMouse, botaoMedio))
+        {
+            estadoBotaoMedio = 1;
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                estadoBotaoMedio = 2;
+                dificuldade = MEDIO;
+                PlaySound(fxButton);
+                telaJogo = ESCOLHATIMES;
+            }
+            
+        }
+        else estadoBotaoMedio = 0;
+
+        //BOTAO DIFICULDADE DIFICIL
+        if (CheckCollisionPointRec(ponteiroMouse, botaoDificil))
+        {
+            estadoBotaoDificil = 1;
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                estadoBotaoDificil = 2;
+                dificuldade = DIFICIL;
+                PlaySound(fxButton);
+                telaJogo = ESCOLHATIMES;
+            }
+            
+        }
+        else estadoBotaoDificil = 0;
 
 
+        //tela de jogo dos modos
+        switch (telaJogo)
+        {
+        case ESCOLHATIMES:
+            
+            break;
+        
+        default:
+            break;
+        }
 
+        int tecla = GetCharPressed();
+        
+        while (tecla > 0){
+            if ((tecla >= 32) && (tecla <=125) && (pos < 22)){
+                escritaTimes[pos] = (char)tecla;
+                pos++;
+                escritaTimes[pos] = '\0';
+            }//if 
+        tecla = GetCharPressed();
+
+            
+        }//capturar as escritas
+        
+        //apagar com o Backspace
+        if (IsKeyPressed(KEY_BACKSPACE)){
+            pos--;
+            if (pos < 0) pos = 0;
+            escritaTimes[pos] = '\0'; 
+        }                    
+            
+            
+        if (IsKeyPressed(KEY_ENTER))
+        {
+            enviar = true;
+        }
+         
+        if (enviar && strlen(escritaTimes) > 0)
+        {
+            if (strcasecmp(escritaTimes, timeSorteado.time) == 0 && contadorTentativa == 0)
+            {
+                PlaySound(acertarPrimeira);
+                acertou = true;
+            }
+            contadorTentativa++;
+            enviar = false;
+        }
+        
+                    
+        
+        
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
             Color textoBotao1 = (estadoBotao1 > 0) ? WHITE : RED;
-            Color textoBotao2 = (estadoBotao2 > 0) ? WHITE : RED;
             Color textoBotaoVoltar = (estadoBotaoVoltar > 0) ? WHITE : RED;
+            Color textoBotaoFacil = (estadoBotaoFacil > 0) ? WHITE : RED;
+            Color textoBotaoMedio = (estadoBotaoMedio > 0) ? WHITE : RED;
+            Color textoBotaoDificil = (estadoBotaoDificil > 0) ? WHITE : RED;
+
             ClearBackground(RAYWHITE);
 
             switch (telaJogo)
@@ -147,27 +313,88 @@ int main(void)
 
                 //retangulo redondo pra ficar em volta do texto do menu
                 DrawRectangleRounded((Rectangle)botao1, 2, 3, BLACK);
-                DrawRectangleRounded((Rectangle)botao2, 2, 3, BLACK);
 
                 //texto do menu
                 DrawText("BAD FALLEN", xMenu, screenHeight*0.25, 75, RED);
-                DrawText("TIMES", x1, screenHeight*0.4723, 35, textoBotao1);
-                DrawText("PLAYERS", x2, screenHeight*0.6, 35, textoBotao2);
+                DrawText("PRESSIONE ESPAÇO PARA INICIAR", x1, screenHeight*0.5, 35, textoBotao1);
+
                 break;
+                    
+            case ESCOLHADIFICULDADE:
+                ClearBackground(RAYWHITE);
             
-            case ESCOLHATIMES:
-                ClearBackground(RAYWHITE);//muda background pra branco
-                DrawText("Digite um time: ", 30, 40, 45, LIGHTGRAY);
+                //texto pra selecionar a dificuldade + botao de voltar
+                DrawText("ESCOLHA A DIFICULDADE", xDificuldade, 10, 60, RED);
                 DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
-                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);    
+                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
+                
+                //botao das dificuldades
+                DrawRectangleRounded((Rectangle)botaoFacil, 2, 3, BLACK);
+                DrawRectangleRounded((Rectangle)botaoMedio, 2, 3, BLACK);
+                DrawRectangleRounded((Rectangle)botaoDificil, 2, 3, BLACK);
+
+                //texto das dificuldades
+                DrawText("FÁCIL", xFacil, 250, 40, textoBotaoFacil);
+                DrawText("MÉDIO", xMedio, 400, 40, textoBotaoMedio);
+                DrawText("DIFÍCIL", xDificil, 550, 40, textoBotaoDificil);
                 break;
 
-            case ESCOLHAPLAYERS:
-                ClearBackground(RAYWHITE);//muda background pra branco
-                DrawText("Digite um jogador: ", 30, 40, 45, LIGHTGRAY);//desenha o texto na posicao fornecida
-                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);//desenha um retangulo arredondado na posicao fornecida
-                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);//desenha o texto na posicao fornecida    
+            case ESCOLHATIMES:
+                switch (dificuldade)
+                {
+                case FACIL:
+                
+                if (acertou)
+                {
+                    DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
+                }
+                
+                DrawText(timesCode[indiceAleatorio].time, 300, 300, 60, RED);
+
+                DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
+                DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
+                DrawText(escritaTimes, 300, 10, 40, BLACK);
+                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
+                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
+                    break;
+                
+                case MEDIO:
+                if (acertou)
+                {
+                    DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
+                }
+                
+                DrawText(timesCode[indiceAleatorio].time, 300, 300, 60, RED);
+                    
+                DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
+                DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
+                DrawText(escritaTimes, 300, 10, 40, BLACK);
+                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
+                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
+                    
                 break;
+                case DIFICIL:
+                
+                //captura as teclas
+                DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);
+
+                if (acertou)
+                {
+                    DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
+                }
+                
+                DrawText(timesCode[indiceAleatorio].time, 300, 300, 60, RED);
+                    
+                DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, RED);
+                DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
+                DrawText(escritaTimes, 300, 10, 40, RED);
+                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
+                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
+
+                   break;
+                default:
+                    break;
+                }
 
             default:
                 break;
