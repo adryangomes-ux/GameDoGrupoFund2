@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_LINHAS 50
 #define MAX_COLUNAS 5
@@ -49,6 +50,10 @@ typedef struct {
     char dica[MAX_TEXTO];
 } TimeCSV;
 
+void toLowerCase(char *str) {
+    for (int i = 0; str[i]; i++)
+        str[i] = (char)tolower(str[i]);
+}
 
 int main(void)
 {
@@ -57,8 +62,9 @@ int main(void)
     const int screenWidth = 1280;
     const int screenHeight = 960;
 
-    InitAudioDevice();      // Initialize audio device
     InitWindow(screenWidth, screenHeight, "bad fallen");
+    InitAudioDevice();      // Initialize audio device
+    //sons e texturas
     Texture2D menu = LoadTexture("imagens/fallen.jpg");
     Sound fxButton = LoadSound("audio/selecao.wav"); 
     Sound acertarPrimeira = LoadSound("audio/grafite.wav");
@@ -114,10 +120,6 @@ int main(void)
     int pos = 0; //posição atual no buffer
     
     TimeCSV timesCode[MAX_TEXTO];//para poder ler o arquivo csv
-    int indice = 16;
-    int indiceAleatorio = GetRandomValue(0, indice-1);
-    TimeCSV timeSorteado = timesCode[indiceAleatorio];
-    char escritaTimes[MAX_TEXTO] = "\0";
     
     FILE *arquivo = fopen("arquivos/TimesDicas.csv", "r");
     if (arquivo == NULL) {
@@ -125,7 +127,9 @@ int main(void)
         CloseWindow();
         return 1;
     }//caso der erro
-
+    
+    char escritaTimes[MAX_TEXTO] = "\0";
+    
     char linha[512];
     fgets(linha, sizeof(linha), arquivo); // Ignora o cabeçalho
 
@@ -153,6 +157,16 @@ int main(void)
     }
 
     fclose(arquivo);
+
+    // escolhe um time aleatório APÓS carregar o CSV
+    int indice = count;
+    if (indice <= 0) {
+        printf("Nenhuma linha lida do CSV.\n");
+        CloseWindow();
+        return 1;
+    }
+    int indiceAleatorio = GetRandomValue(0, indice - 1);
+    TimeCSV timeSorteado = timesCode[indiceAleatorio];
 
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
@@ -244,49 +258,55 @@ int main(void)
         switch (telaJogo)
         {
         case ESCOLHATIMES:
+            int tecla = GetCharPressed();
             
+            while (tecla > 0){
+                if ((tecla >= 32) && (tecla <=125) && (pos < 22)){
+                    escritaTimes[pos] = (char)tecla;
+                    pos++;
+                    escritaTimes[pos] = '\0';
+                }//if 
+            tecla = GetCharPressed();
+                
+            }//capturar as escritas
+            
+            //apagar com o Backspace
+            if (IsKeyPressed(KEY_BACKSPACE)){
+                pos--;
+                if (pos < 0) pos = 0;
+                escritaTimes[pos] = '\0'; 
+            }                    
+                
+                
+            if (IsKeyPressed(KEY_ENTER))
+            {
+                enviar = true;
+            }
+            
+            if (enviar)
+            {
+                char chuteTemp[MAX_TEXTO];
+                strcpy(chuteTemp, escritaTimes);
+                toLowerCase(chuteTemp);
+                if (_stricmp(chuteTemp, timeSorteado.time) == 0)
+                {
+                    printf("Comparando: [%s] com [%s]\n", escritaTimes, timeSorteado.time);
+                    acertou = true;
+                    PlaySound(acertarPrimeira);
+                }
+                enviar = false;
+                contadorTentativa++;
+
+                escritaTimes[0] = '\0';
+                pos = 0;
+            }
+
             break;
         
         default:
             break;
         }
 
-        int tecla = GetCharPressed();
-        
-        while (tecla > 0){
-            if ((tecla >= 32) && (tecla <=125) && (pos < 22)){
-                escritaTimes[pos] = (char)tecla;
-                pos++;
-                escritaTimes[pos] = '\0';
-            }//if 
-        tecla = GetCharPressed();
-
-            
-        }//capturar as escritas
-        
-        //apagar com o Backspace
-        if (IsKeyPressed(KEY_BACKSPACE)){
-            pos--;
-            if (pos < 0) pos = 0;
-            escritaTimes[pos] = '\0'; 
-        }                    
-            
-            
-        if (IsKeyPressed(KEY_ENTER))
-        {
-            enviar = true;
-        }
-         
-        if (enviar && strlen(escritaTimes) > 0)
-        {
-            if (strcasecmp(escritaTimes, timeSorteado.time) == 0 && contadorTentativa == 0)
-            {
-                PlaySound(acertarPrimeira);
-                acertou = true;
-            }
-            contadorTentativa++;
-            enviar = false;
-        }
         
                     
         
