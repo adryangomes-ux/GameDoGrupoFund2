@@ -101,7 +101,6 @@ int main(void)
     bool estadoBotaoFacil = 0;
     bool estadoBotaoMedio = 0;
     bool estadoBotaoDificil = 0;
-
     bool estadoMenu = false;
     bool acertou = false;
     bool enviar = false;
@@ -202,7 +201,7 @@ int main(void)
             {
                 estadoBotaoVoltar = 2;
                 PlaySound(fxButton);
-                telaJogo = MENU;
+                telaJogo = ESCOLHADIFICULDADE;
             } 
         }
         else estadoBotaoVoltar = 0;
@@ -288,14 +287,14 @@ int main(void)
                 char chuteTemp[MAX_TEXTO];
                 strcpy(chuteTemp, escritaTimes);
                 toLowerCase(chuteTemp);
-                if (_stricmp(chuteTemp, timeSorteado.time) == 0)
+                if (_stricmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa == 0)
                 {
-                    printf("Comparando: [%s] com [%s]\n", escritaTimes, timeSorteado.time);
                     acertou = true;
                     PlaySound(acertarPrimeira);
+                }else{
+                    contadorTentativa++;
                 }
                 enviar = false;
-                contadorTentativa++;
 
                 escritaTimes[0] = '\0';
                 pos = 0;
@@ -369,6 +368,27 @@ int main(void)
                     DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
                 }
                 
+                
+                if (contadorTentativa == 1)
+                {
+                    DrawText(timesCode[indiceAleatorio].pais, 80, 600, 40, BLACK);
+                }else if (contadorTentativa == 2)
+                {
+                    DrawText(timesCode[indiceAleatorio].jogador, 80, 650, 40, BLACK);
+                }else if (contadorTentativa == 3)
+                {
+                    DrawText(timesCode[indiceAleatorio].destaque, 80, 700, 40, BLACK);
+                }else if (contadorTentativa == 4)
+                {
+                    DrawText(timesCode[indiceAleatorio].dica, 80, 750, 32, BLACK);
+                }
+                
+                
+                
+                
+                
+                
+
                 DrawText(timesCode[indiceAleatorio].time, 300, 300, 60, RED);
 
                 DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
@@ -379,7 +399,7 @@ int main(void)
                     break;
                 
                 case MEDIO:
-                if (acertou)
+                if (acertou && contadorTentativa == 0)
                 {
                     DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
                 }
@@ -398,7 +418,7 @@ int main(void)
                 //captura as teclas
                 DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);
 
-                if (acertou)
+                if (acertou && contadorTentativa == 0)
                 {
                     DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
                 }
