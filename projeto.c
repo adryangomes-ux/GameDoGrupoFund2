@@ -73,7 +73,10 @@ int main(void)
     //centralizar o texto "times" no eixo x
     int larguraJanela = GetScreenWidth();
     int larguraTexto1 = MeasureText("PRESSIONE ESPAÇO PARA INICIAR", 35);
+    int perdedor = MeasureText("VOCE É PESSIMO",60);
     int x1 = (larguraJanela - larguraTexto1) / 2;
+    int xPerdedor = ((larguraJanela - perdedor) / 2) - 120;
+    
 
     //centraliza os textos da tela de escolha de dificuldade
     int larguraTextoDificuldade = MeasureText("ESCOLHA A DIFICULDADE", 60);
@@ -389,6 +392,9 @@ int main(void)
                 }else if (contadorTentativa == 4)
                 {
                     DrawText(timesCode[indiceAleatorio].dica, 80, 750, 32, BLACK);
+                }else if(contadorTentativa >= 5){
+                    DrawText("VOCE É PESSIMO",xPerdedor,300,80,BLUE);
+
                 }
 
                 DrawText(timesCode[indiceAleatorio].time, 300, 300, 60, RED);
