@@ -10,7 +10,7 @@
 *   Note that compiled executable is placed in the same folder as .c file
 *
 *   To test the examples on Web, press F6 and execute 'raylib_compile_execute_web' script
-*   Web version of the program is generated in the same folder as .c file
+*   Web version   of the program is generated in the same folder as .c file
 *
 *   You can find all basic examples on C:\raylib\raylib\examples folder or
 *   raylib official webpage: www.raylib.com
@@ -298,13 +298,6 @@ int main(void)
                     contadorTentativa++;
                 }
                 enviar = false;
-
-                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa > 0)
-                {
-                    acertou = true;
-                }else{
-                    contadorTentativa++;
-                }
 
                 escritaTimes[0] = '\0';
                 pos = 0;
