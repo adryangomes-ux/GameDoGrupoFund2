@@ -187,13 +187,14 @@ int main(void)
         {
             estadoMenu = true;
             estadoBotao1 = 1;
-            PlaySound(fxButton);
+            
+            
             telaJogo = ESCOLHADIFICULDADE;
         }
         else estadoBotao1 = 0;
         
         
-        //botao de voltar pro menu
+        //botao de voltar pra tela de dificuldades
         if (CheckCollisionPointRec(ponteiroMouse, botaoVoltar))
         {
             estadoBotaoVoltar = 1;
@@ -202,6 +203,8 @@ int main(void)
                 estadoBotaoVoltar = 2;
                 PlaySound(fxButton);
                 telaJogo = ESCOLHADIFICULDADE;
+                escritaTimes[0] = '\0';
+                pos = 0;
             } 
         }
         else estadoBotaoVoltar = 0;
@@ -287,7 +290,7 @@ int main(void)
                 char chuteTemp[MAX_TEXTO];
                 strcpy(chuteTemp, escritaTimes);
                 toLowerCase(chuteTemp);
-                if (_stricmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa == 0)
+                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa == 0)
                 {
                     acertou = true;
                     PlaySound(acertarPrimeira);
@@ -295,6 +298,13 @@ int main(void)
                     contadorTentativa++;
                 }
                 enviar = false;
+
+                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa > 0)
+                {
+                    acertou = true;
+                }else{
+                    contadorTentativa++;
+                }
 
                 escritaTimes[0] = '\0';
                 pos = 0;
@@ -362,12 +372,17 @@ int main(void)
                 switch (dificuldade)
                 {
                 case FACIL:
-                
-                if (acertou)
+                DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);
+
+                if (acertou && contadorTentativa == 0)
                 {
                     DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
+                }else if (acertou && contadorTentativa > 0)
+                {
+                    DrawText("Parabéns, você acertou!", 300, 300, 40, RED);
                 }
                 
+                   
                 
                 if (contadorTentativa == 1)
                 {
@@ -382,12 +397,6 @@ int main(void)
                 {
                     DrawText(timesCode[indiceAleatorio].dica, 80, 750, 32, BLACK);
                 }
-                
-                
-                
-                
-                
-                
 
                 DrawText(timesCode[indiceAleatorio].time, 300, 300, 60, RED);
 
@@ -448,6 +457,7 @@ int main(void)
         // De-Initialization
         //--------------------------------------------------------------------------------------
         UnloadSound(fxButton);
+        UnloadSound(acertarPrimeira);
         UnloadTexture(menu);
         CloseWindow();        // Close window and OpenGL context
         //--------------------------------------------------------------------------------------
