@@ -267,55 +267,58 @@ int main(void)
                 break;
 
             case ESCOLHATIMES:
-            int tecla = GetCharPressed();
             
-            while (tecla > 0){
-                if ((tecla >= 32) && (tecla <=125) && (pos < 22)){
-                    escritaTimes[pos] = (char)tecla;
-                    pos++;
-                    escritaTimes[pos] = '\0';
-                }//if 
-                tecla = GetCharPressed();
+            if(!acertou){
+
+                int tecla = GetCharPressed();
                 
-            }//capturar as escritas
-            
-            //apagar com o Backspace
-            if (IsKeyPressed(KEY_BACKSPACE)){
-                pos--;
-                if (pos < 0) pos = 0;
-                escritaTimes[pos] = '\0'; 
-            }                    
-            
-            
-            if (IsKeyPressed(KEY_ENTER))
-            {
-                enviar = true;
-            }
-            
-            if (enviar)
-            {
-                char chuteTemp[MAX_TEXTO];
-                strcpy(chuteTemp, escritaTimes);
-                toLowerCase(chuteTemp);
-
-                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa == 0){
-                    acertou = true;
-                        PlaySound(acertarPrimeira);
-                        
-                }else if(strcasecmp(chuteTemp, timeSorteado.time) != 0){
-                    contadorTentativa++;
-                }
-
-                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa > 0)
-                {
-                    acertou = true;
-                }
-
+                while (tecla > 0){
+                    if ((tecla >= 32) && (tecla <=125) && (pos < 22)){
+                        escritaTimes[pos] = (char)tecla;
+                        pos++;
+                        escritaTimes[pos] = '\0';
+                    }//if 
+                    tecla = GetCharPressed();
                     
-                enviar = false;
+                }//capturar as escritas
                 
-                escritaTimes[0] = '\0';
-                pos = 0;
+                //apagar com o Backspace
+                if (IsKeyPressed(KEY_BACKSPACE)){
+                    pos--;
+                    if (pos < 0) pos = 0;
+                    escritaTimes[pos] = '\0'; 
+                }                    
+                
+                
+                if (IsKeyPressed(KEY_ENTER))
+                {
+                    enviar = true;
+                }
+                
+                if (enviar)
+                {
+                    char chuteTemp[MAX_TEXTO];
+                    strcpy(chuteTemp, escritaTimes);
+                    toLowerCase(chuteTemp);
+    
+                    if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa == 0){
+                        acertou = true;
+                        PlaySound(acertarPrimeira);
+                    }else if(strcasecmp(chuteTemp, timeSorteado.time) != 0){
+                        contadorTentativa++;
+                    }
+    
+                    if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa > 0)
+                    {
+                        acertou = true;
+                    }
+    
+    
+                    enviar = false;
+                    
+                    escritaTimes[0] = '\0';
+                    pos = 0;
+                }
             }
                   
 
