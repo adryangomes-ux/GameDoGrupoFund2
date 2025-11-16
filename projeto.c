@@ -299,9 +299,17 @@ int main(void)
                 {
                     acertou = true;
                     PlaySound(acertarPrimeira);
-                }else{
+                    
+                }else if(strcasecmp(chuteTemp, timeSorteado.time) != 0){
                     contadorTentativa++;
                 }
+
+                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa > 0)
+                {
+                    acertou = true;
+                }
+
+                    
                 enviar = false;
                 
                 escritaTimes[0] = '\0';
@@ -370,7 +378,7 @@ int main(void)
                     switch (dificuldade)
                     {
                         case FACIL:
-                        DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);
+                        DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);//desenha quantidade de tentativas
                         
                         if (acertou && contadorTentativa == 0)
                         {
@@ -394,9 +402,10 @@ int main(void)
                         }else if (contadorTentativa == 4)
                         {
                             DrawText(timesCode[indiceAleatorio].dica, 80, 750, 32, BLACK);
-                        }else if(contadorTentativa == 5){
+                        }else if(contadorTentativa == 5 && acertou == false){
                             DrawText("VOCE É PESSIMO...",xPerdedor,300,80,BLUE);
-                           // int horario = GetTime();
+                         
+                            // int horario = GetTime();
 
                        //     if (horario > 5){
                         //    DrawText("VOCE É MUITO PESSIMO...",xPerdedor,400,80,BLUE);
@@ -408,7 +417,6 @@ int main(void)
                             
                 }//if para voltar ao menu
 
-                DrawText(timesCode[indiceAleatorio].time, 300, 300, 60, RED);
 
                 DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
                 DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
