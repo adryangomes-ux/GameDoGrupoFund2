@@ -104,10 +104,13 @@ int main(void)
     bool estadoBotaoFacil = 0;
     bool estadoBotaoMedio = 0;
     bool estadoBotaoDificil = 0;
+    bool estadoBotaoDificuldade = 0;
+    
+    //outras variaveis booleanas
     bool estadoMenu = false;
     bool acertou = false;
     bool enviar = false;
-    
+
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {300, screenHeight*0.48, 680, 70};
     Rectangle botaoVoltar = {970, 870, 200, 70};
@@ -192,27 +195,9 @@ int main(void)
         {
             estadoMenu = true;
             estadoBotao1 = 1;
-            
-            
             telaJogo = ESCOLHADIFICULDADE;
         }
-        else estadoBotao1 = 0;
-        
-        
-        //botao de voltar pra tela de dificuldades
-        if (CheckCollisionPointRec(ponteiroMouse, botaoVoltar))
-        {
-            estadoBotaoVoltar = 1;
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-            {
-                estadoBotaoVoltar = 2;
-                PlaySound(fxButton);
-                telaJogo = ESCOLHADIFICULDADE;
-                escritaTimes[0] = '\0';
-                pos = 0;
-            } 
-        }
-        else estadoBotaoVoltar = 0;
+        else estadoBotao1 = 0;        
         
         
         //BOTAO DIFICULDADE FACIL
@@ -226,7 +211,6 @@ int main(void)
                 PlaySound(fxButton);
                 telaJogo = ESCOLHATIMES;
             }
-            
         }
         else estadoBotaoFacil = 0;
         
@@ -264,6 +248,24 @@ int main(void)
         //tela de jogo dos modos
         switch (telaJogo)
         {
+            case ESCOLHADIFICULDADE:
+    
+                //botao de voltar pro menu quando se está na tela de dificuldades
+                if (CheckCollisionPointRec(ponteiroMouse, botaoVoltar))
+                {
+                    estadoBotaoDificuldade = 1;
+                    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                    {
+                        estadoBotaoDificuldade = 2;
+                        PlaySound(fxButton);
+                        estadoMenu = false;
+                        telaJogo = MENU;
+                    }
+                }
+                else estadoBotaoDificuldade = 0;
+
+                break;
+
             case ESCOLHATIMES:
             int tecla = GetCharPressed();
             
@@ -295,11 +297,11 @@ int main(void)
                 char chuteTemp[MAX_TEXTO];
                 strcpy(chuteTemp, escritaTimes);
                 toLowerCase(chuteTemp);
-                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa == 0)
-                {
+
+                if (strcasecmp(chuteTemp, timeSorteado.time) == 0 && contadorTentativa == 0){
                     acertou = true;
-                    PlaySound(acertarPrimeira);
-                    
+                        PlaySound(acertarPrimeira);
+                        
                 }else if(strcasecmp(chuteTemp, timeSorteado.time) != 0){
                     contadorTentativa++;
                 }
@@ -315,7 +317,23 @@ int main(void)
                 escritaTimes[0] = '\0';
                 pos = 0;
             }
-            
+                  
+
+            //botao de voltar pra tela de dificuldades
+            if (CheckCollisionPointRec(ponteiroMouse, botaoVoltar))
+            {
+                estadoBotaoVoltar = 1;
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    estadoBotaoVoltar = 2;
+                    PlaySound(fxButton);
+                    telaJogo = ESCOLHADIFICULDADE;
+                    escritaTimes[0] = '\0';
+                    pos = 0;
+                } 
+            }
+            else estadoBotaoVoltar = 0;
+
             break;
             
             default:
@@ -334,7 +352,8 @@ int main(void)
         Color textoBotaoFacil = (estadoBotaoFacil > 0) ? WHITE : RED;
         Color textoBotaoMedio = (estadoBotaoMedio > 0) ? WHITE : RED;
         Color textoBotaoDificil = (estadoBotaoDificil > 0) ? WHITE : RED;
-        
+        Color textoBotaoDificuldade = (estadoBotaoDificuldade > 0) ? WHITE : RED;
+
         ClearBackground(RAYWHITE);
         
         switch (telaJogo)
@@ -361,7 +380,7 @@ int main(void)
                     //texto pra selecionar a dificuldade + botao de voltar
                     DrawText("ESCOLHA A DIFICULDADE", xDificuldade, 10, 60, RED);
                     DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
-                    DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
+                    DrawText("VOLTAR", 996, 890, 35, textoBotaoDificuldade);
                     
                     //botao das dificuldades
                     DrawRectangleRounded((Rectangle)botaoFacil, 2, 3, BLACK);
