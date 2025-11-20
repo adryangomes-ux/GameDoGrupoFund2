@@ -68,6 +68,8 @@ int main(void)
     Texture2D menu = LoadTexture("imagens/fallen.jpg");
     Sound fxButton = LoadSound("audio/selecao.wav"); 
     Sound acertarPrimeira = LoadSound("audio/grafite.wav");
+    Sound lesgo = LoadSound("audio/okletsgo.wav");
+    SetSoundVolume(lesgo, 0.25f);
 
     
     //centralizar o texto "times" no eixo x
@@ -196,6 +198,7 @@ int main(void)
             estadoMenu = true;
             estadoBotao1 = 1;
             telaJogo = ESCOLHADIFICULDADE;
+            PlaySound(lesgo);
         }
         else estadoBotao1 = 0;        
         
