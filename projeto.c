@@ -46,7 +46,7 @@ void toLowerCase(char *str) {
     for (int i = 0; str[i]; i++)
     str[i] = (char)tolower(str[i]);
 }        
-    
+
 int main(void){
     //Armazenar texto salvo
     int count = 0; //contador
@@ -56,16 +56,52 @@ int main(void){
     
     TimesCSV timesCode[MAX_LINHAS];//para poder ler o arquivo csv
     
-    FILE *arquivo = fopen("arquivos/TimesDicas.csv", "r");
-    if (arquivo == NULL) {
-            printf("Erro ao abrir o arquivo CSV!\n");
-            CloseWindow();
-            return 1;
-        }//caso der erro
+    FILE *arquivoBin = fopen("arquivos/save.dat", "rb");
+    FILE *arquivo;
+    if (arquivoBin != NULL)
+    {        
         
-        char escritaTimes[MAX_TEXTO] = "\0";
         
         char linha[512];
+        fgets(linha, sizeof(linha), arquivoBin); // Ignora o cabeçalho
+        
+        // Lê linha por linha
+        while (fgets(linha, sizeof(linha), arquivoBin) && count < MAX_LINHAS) {
+            // Remove quebra de linha
+            linha[strcspn(linha, "\r\n")] = 0;
+            
+            // Quebra a linha em colunas
+            char *token = strtok(linha, ",");
+            int coluna = 0;
+            
+            while (token != NULL && coluna < MAX_COLUNAS) {
+                switch (coluna) {
+                    case 1: strncpy(timesCode[count].pais, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
+                    case 0: strncpy(timesCode[count].time, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
+                    case 2: strncpy(timesCode[count].jogador, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
+                    case 3: strncpy(timesCode[count].destaque, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
+                    case 4: strncpy(timesCode[count].dica, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
+                }
+                token = strtok(NULL, ",");
+                coluna++;
+            }
+            count++;
+        }
+        
+        fclose(arquivoBin);
+        
+        
+    }else{
+        printf("Bem-vindo!");
+        arquivo = fopen("arquivos/TimesDicas.csv", "r");
+        if (arquivo == NULL) {
+                printf("Erro ao abrir o arquivo CSV!\n");
+                CloseWindow();
+                return 1;
+            }//caso der erro
+            
+            
+            char linha[512];
         fgets(linha, sizeof(linha), arquivo); // Ignora o cabeçalho
         
         // Lê linha por linha
@@ -92,6 +128,10 @@ int main(void){
         }
         
         fclose(arquivo);
+
+    }
+    char escritaTimes[MAX_TEXTO] = "\0";
+    
         
         // escolhe um time aleatório APÓS carregar o CSV
         int indice = count;
@@ -103,51 +143,52 @@ int main(void){
         
         int indiceAleatorio = GetRandomValue(0, indice - 1);//gera um valor aleatorio para settar o time
         TimesCSV timeSorteado = timesCode[indiceAleatorio];
+        //--------------------------------------------------------------------------------------
         
         
         
-        do {//vai fazer enquanto
-            printf(VERMELHO "\n==== MENU ====\n" RESET);
-            printf(CIANO "1 - Inserir\n" RESET);
-            printf(CIANO "2 - Listar\n" RESET);
-            printf(CIANO "3 - Pesquisar\n" RESET);
-            printf(CIANO "4 - Editar\n" RESET);
-            printf(CIANO "5 - Excluir\n" RESET);
-            printf(CIANO "0 - Sair para o jogo\n" RESET);
-            printf( VERDE "Escolha: " RESET);
+           do {//vai fazer enquanto
+            printf("\n==== MENU ====\n");
+            printf("1 - Inserir\n");
+            printf("2 - Listar\n");
+            printf("3 - Pesquisar\n");
+            printf("4 - Editar\n");
+            printf("5 - Excluir\n");
+            printf("0 - Sair para o jogo\n");
+            printf("Escolha: ");
             scanf("%d", &opcao);
-            setbuf(stdin,NULL);
-        
+            //getchar();
+            
             switch (opcao) {
                 case 1: inserir(timesCode, &count); break;
                 case 2: listar(timesCode, count); break;
                 case 3: pesquisar(timesCode, count); break;
                 case 4: editar(timesCode, count); break;
                 case 5: excluir(timesCode, &count); break;
-                
             }
-        
+            
         } while (opcao != 0);//for diferente de zero
         
-        
-        // Initialization
-        //--------------------------------------------------------------------------------------
-        const int screenWidth = 1280;
-        const int screenHeight = 960;
-        
-        InitWindow(screenWidth, screenHeight, "bad fallen");
-        InitAudioDevice();      // Initialize audio device
-        //sons e texturas
-        Texture2D menu = LoadTexture("imagens/fallen.jpg");
-        Sound fxButton = LoadSound("audio/selecao.wav"); 
-        Sound acertarPrimeira = LoadSound("audio/grafite.wav");
-        Sound lesgo = LoadSound("audio/okletsgo.wav");
+        SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    
+    // Initialization
+    //--------------------------------------------------------------------------------------
+    const int screenWidth = 1280;
+    const int screenHeight = 960;
+
+    InitWindow(screenWidth, screenHeight, "bad fallen");
+    InitAudioDevice();      // Initialize audio device
+    //sons e texturas
+    Texture2D menu = LoadTexture("imagens/fallen.jpg");
+    Sound fxButton = LoadSound("audio/selecao.wav"); 
+    Sound acertarPrimeira = LoadSound("audio/grafite.wav");
+    Sound lesgo = LoadSound("audio/okletsgo.wav");
     SetSoundVolume(lesgo, 0.25f);
     Texture2D telaDif = LoadTexture("imagens/ancient/ancient1.png");
     Texture2D telaFacil = LoadTexture("imagens/dust2/dust3.png");
     Texture2D telaMedio = LoadTexture("imagens/anubis/anubis2.png");
     Texture2D telaHard = LoadTexture("imagens/golden/golden3.png");
-    
+
     //centralizar o texto "times" no eixo x
     int larguraJanela = GetScreenWidth();
     int larguraTexto1 = MeasureText("PRESSIONE ESPAÇO PARA INICIAR", 35);
@@ -188,7 +229,7 @@ int main(void){
     bool estadoMenu = false;
     bool acertou = false;
     bool enviar = false;
-    
+
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {300, screenHeight*0.48, 680, 70};
     Rectangle botaoVoltar = {970, 870, 200, 70};
@@ -197,9 +238,7 @@ int main(void){
     Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
     
     
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
-    
+
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -544,6 +583,9 @@ int main(void){
         UnloadSound(fxButton);
         UnloadSound(acertarPrimeira);
         UnloadTexture(menu);
+        fwrite(&timesCode, sizeof(TimesCSV), 1, arquivoBin);
+        arquivo = fopen("arquivos/save.dat","wb");
+        fclose(arquivoBin);
         CloseWindow();        // Close window and OpenGL context
         //--------------------------------------------------------------------------------------
         
