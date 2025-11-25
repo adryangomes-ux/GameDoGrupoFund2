@@ -70,8 +70,11 @@ int main(void)
     Sound acertarPrimeira = LoadSound("audio/grafite.wav");
     Sound lesgo = LoadSound("audio/okletsgo.wav");
     SetSoundVolume(lesgo, 0.25f);
+    Texture2D telaDif = LoadTexture("imagens/ancient/ancient1.png");
+    Texture2D telaFacil = LoadTexture("imagens/dust2/dust3.png");
+    Texture2D telaMedio = LoadTexture("imagens/anubis/anubis2.png");
+    Texture2D telaHard = LoadTexture("imagens/golden/golden3.png");
 
-    
     //centralizar o texto "times" no eixo x
     int larguraJanela = GetScreenWidth();
     int larguraTexto1 = MeasureText("PRESSIONE ESPAÇO PARA INICIAR", 35);
@@ -383,6 +386,11 @@ int main(void)
                     case ESCOLHADIFICULDADE:
                     ClearBackground(RAYWHITE);
                     
+                    DrawTexturePro(telaDif,
+                    (Rectangle){ 0, 0, telaDif.width, telaDif.height },
+                    (Rectangle){ 0, 0, screenWidth, screenHeight },
+                    (Vector2){ 0, 0 }, 0.0f, WHITE);
+                    
                     //texto pra selecionar a dificuldade + botao de voltar
                     DrawText("ESCOLHA A DIFICULDADE", xDificuldade, 10, 60, RED);
                     DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
@@ -403,6 +411,12 @@ int main(void)
                     switch (dificuldade)
                     {
                         case FACIL:
+
+                        DrawTexturePro(telaFacil,
+                        (Rectangle){ 0, 0, telaFacil.width, telaFacil.height },
+                        (Rectangle){ 0, 0, screenWidth, screenHeight },
+                        (Vector2){ 0, 0 }, 0.0f, WHITE);
+
                         DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);//desenha quantidade de tentativas
                         
                         if (acertou && contadorTentativa == 0)
@@ -451,6 +465,12 @@ int main(void)
                     break;
                 
                 case MEDIO:
+
+                DrawTexturePro(telaMedio,
+                        (Rectangle){ 0, 0, telaMedio.width, telaMedio.height },
+                        (Rectangle){ 0, 0, screenWidth, screenHeight },
+                        (Vector2){ 0, 0 }, 0.0f, WHITE);
+
                 if (acertou && contadorTentativa == 0)
                 {
                     DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
@@ -467,6 +487,11 @@ int main(void)
                 break;
                 case DIFICIL:
                 
+                DrawTexturePro(telaHard,
+                        (Rectangle){ 0, 0, telaHard.width, telaHard.height },
+                        (Rectangle){ 0, 0, screenWidth, screenHeight },
+                        (Vector2){ 0, 0 }, 0.0f, WHITE);
+
                 //captura as teclas
                 DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);
 
