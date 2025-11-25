@@ -176,7 +176,7 @@ int main(void)
 
     int indiceAleatorio = GetRandomValue(0, indice - 1);//gera um valor aleatorio para settar o time
     TimeCSV timeSorteado = timesCode[indiceAleatorio];
-    
+    //A
     
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
