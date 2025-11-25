@@ -5,6 +5,14 @@
 #define MAX_COLUNAS 25
 #define MAX_TEXTO 128
 
+// cores ANSII
+#define VERMELHO     "\x1b[31m"
+#define VERDE   "\x1b[32m"
+#define AZUL    "\x1b[34m"
+#define CIANO   "\x1b[36m"
+#define RESET   "\x1b[0m"
+
+
 typedef struct {
     char time[MAX_TEXTO];
     char pais[MAX_TEXTO];

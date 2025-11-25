@@ -103,22 +103,20 @@ int main(void){
         
         int indiceAleatorio = GetRandomValue(0, indice - 1);//gera um valor aleatorio para settar o time
         TimesCSV timeSorteado = timesCode[indiceAleatorio];
-        SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-        //--------------------------------------------------------------------------------------
         
         
         
-           do {//vai fazer enquanto
-            printf("\n==== MENU ====\n");
-            printf("1 - Inserir\n");
-            printf("2 - Listar\n");
-            printf("3 - Pesquisar\n");
-            printf("4 - Editar\n");
-            printf("5 - Excluir\n");
-            printf("0 - Sair para o jogo\n");
-            printf("Escolha: ");
+        do {//vai fazer enquanto
+            printf(VERMELHO "\n==== MENU ====\n" RESET);
+            printf(CIANO "1 - Inserir\n" RESET);
+            printf(CIANO "2 - Listar\n" RESET);
+            printf(CIANO "3 - Pesquisar\n" RESET);
+            printf(CIANO "4 - Editar\n" RESET);
+            printf(CIANO "5 - Excluir\n" RESET);
+            printf(CIANO "0 - Sair para o jogo\n" RESET);
+            printf( VERDE "Escolha: " RESET);
             scanf("%d", &opcao);
-            //getchar();
+            setbuf(stdin,NULL);
         
             switch (opcao) {
                 case 1: inserir(timesCode, &count); break;
@@ -126,30 +124,30 @@ int main(void){
                 case 3: pesquisar(timesCode, count); break;
                 case 4: editar(timesCode, count); break;
                 case 5: excluir(timesCode, &count); break;
-        
+                
             }
         
         } while (opcao != 0);//for diferente de zero
         
-    
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    const int screenWidth = 1280;
-    const int screenHeight = 960;
-
-    InitWindow(screenWidth, screenHeight, "bad fallen");
-    InitAudioDevice();      // Initialize audio device
-    //sons e texturas
-    Texture2D menu = LoadTexture("imagens/fallen.jpg");
-    Sound fxButton = LoadSound("audio/selecao.wav"); 
-    Sound acertarPrimeira = LoadSound("audio/grafite.wav");
-    Sound lesgo = LoadSound("audio/okletsgo.wav");
+        
+        // Initialization
+        //--------------------------------------------------------------------------------------
+        const int screenWidth = 1280;
+        const int screenHeight = 960;
+        
+        InitWindow(screenWidth, screenHeight, "bad fallen");
+        InitAudioDevice();      // Initialize audio device
+        //sons e texturas
+        Texture2D menu = LoadTexture("imagens/fallen.jpg");
+        Sound fxButton = LoadSound("audio/selecao.wav"); 
+        Sound acertarPrimeira = LoadSound("audio/grafite.wav");
+        Sound lesgo = LoadSound("audio/okletsgo.wav");
     SetSoundVolume(lesgo, 0.25f);
     Texture2D telaDif = LoadTexture("imagens/ancient/ancient1.png");
     Texture2D telaFacil = LoadTexture("imagens/dust2/dust3.png");
     Texture2D telaMedio = LoadTexture("imagens/anubis/anubis2.png");
     Texture2D telaHard = LoadTexture("imagens/golden/golden3.png");
-
+    
     //centralizar o texto "times" no eixo x
     int larguraJanela = GetScreenWidth();
     int larguraTexto1 = MeasureText("PRESSIONE ESPAÇO PARA INICIAR", 35);
@@ -190,7 +188,7 @@ int main(void){
     bool estadoMenu = false;
     bool acertou = false;
     bool enviar = false;
-
+    
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {300, screenHeight*0.48, 680, 70};
     Rectangle botaoVoltar = {970, 870, 200, 70};
@@ -199,7 +197,9 @@ int main(void){
     Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
     
     
-
+    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    //--------------------------------------------------------------------------------------
+    
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
