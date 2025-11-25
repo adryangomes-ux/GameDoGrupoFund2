@@ -27,14 +27,13 @@
 ********************************************************************************************/
 
 #include "raylib.h"
+#include "times.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_LINHAS 50
-#define MAX_COLUNAS 5
-#define MAX_TEXTO 128
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -42,21 +41,97 @@
 typedef enum telaAtual {MENU, ESCOLHADIFICULDADE,ESCOLHATIMES} telaAtual;
 typedef enum Dificuldade {FACIL=1, MEDIO, DIFICIL} Dificuldade;
 
-typedef struct {
-    char time[MAX_TEXTO];
-    char pais[MAX_TEXTO];
-    char jogador[MAX_TEXTO];
-    char destaque[MAX_TEXTO];
-    char dica[MAX_TEXTO];
-} TimeCSV;
 
 void toLowerCase(char *str) {
     for (int i = 0; str[i]; i++)
-        str[i] = (char)tolower(str[i]);
-}
-
-int main(void)
-{
+    str[i] = (char)tolower(str[i]);
+}        
+    
+int main(void){
+    //Armazenar texto salvo
+    int count = 0; //contador
+    int contadorTentativa = 0;
+    int pos = 0; //posição atual no buffer
+    int opcao;
+    
+    TimesCSV timesCode[MAX_LINHAS];//para poder ler o arquivo csv
+    
+    FILE *arquivo = fopen("arquivos/TimesDicas.csv", "r");
+    if (arquivo == NULL) {
+            printf("Erro ao abrir o arquivo CSV!\n");
+            CloseWindow();
+            return 1;
+        }//caso der erro
+        
+        char escritaTimes[MAX_TEXTO] = "\0";
+        
+        char linha[512];
+        fgets(linha, sizeof(linha), arquivo); // Ignora o cabeçalho
+        
+        // Lê linha por linha
+        while (fgets(linha, sizeof(linha), arquivo) && count < MAX_LINHAS) {
+            // Remove quebra de linha
+            linha[strcspn(linha, "\r\n")] = 0;
+            
+            // Quebra a linha em colunas
+            char *token = strtok(linha, ",");
+            int coluna = 0;
+            
+            while (token != NULL && coluna < MAX_COLUNAS) {
+                switch (coluna) {
+                    case 0: strncpy(timesCode[count].time, token, MAX_TEXTO); break;
+                    case 1: strncpy(timesCode[count].pais, token, MAX_TEXTO); break;
+                    case 2: strncpy(timesCode[count].jogador, token, MAX_TEXTO); break;
+                    case 3: strncpy(timesCode[count].destaque, token, MAX_TEXTO); break;
+                    case 4: strncpy(timesCode[count].dica, token, MAX_TEXTO); break;
+                }
+                token = strtok(NULL, ",");
+                coluna++;
+            }
+            count++;
+        }
+        
+        fclose(arquivo);
+        
+        // escolhe um time aleatório APÓS carregar o CSV
+        int indice = count;
+        if (indice <= 0) {
+            printf("Nenhuma linha lida do CSV.\n");
+            CloseWindow();
+            return 1;
+        }
+        
+        int indiceAleatorio = GetRandomValue(0, indice - 1);//gera um valor aleatorio para settar o time
+        TimesCSV timeSorteado = timesCode[indiceAleatorio];
+        SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+        //--------------------------------------------------------------------------------------
+        
+        
+        
+           do {//vai fazer enquanto
+            printf("\n==== MENU ====\n");
+            printf("1 - Inserir\n");
+            printf("2 - Listar\n");
+            printf("3 - Pesquisar\n");
+            printf("4 - Editar\n");
+            printf("5 - Excluir\n");
+            printf("0 - Sair para o jogo\n");
+            printf("Escolha: ");
+            scanf("%d", &opcao);
+            //getchar();
+        
+            switch (opcao) {
+                case 1: inserir(timesCode, &count); break;
+                case 2: listar(timesCode, count); break;
+                case 3: pesquisar(timesCode, count); break;
+                case 4: editar(timesCode, count); break;
+                case 5: excluir(timesCode, &count); break;
+        
+            }
+        
+        } while (opcao != 0);//for diferente de zero
+        
+    
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 1280;
@@ -124,65 +199,7 @@ int main(void)
     Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
     
     
-    //Armazenar texto salvo
-    int count = 0; //contador
-    int contadorTentativa = 0;
-    int pos = 0; //posição atual no buffer
-    
-    
-    TimeCSV timesCode[MAX_TEXTO];//para poder ler o arquivo csv
-    
-    FILE *arquivo = fopen("arquivos/TimesDicas.csv", "r");
-    if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo CSV!\n");
-        CloseWindow();
-        return 1;
-    }//caso der erro
-    
-    char escritaTimes[MAX_TEXTO] = "\0";
-    
-    char linha[512];
-    fgets(linha, sizeof(linha), arquivo); // Ignora o cabeçalho
-    
-    // Lê linha por linha
-    while (fgets(linha, sizeof(linha), arquivo) && count < MAX_LINHAS) {
-        // Remove quebra de linha
-        linha[strcspn(linha, "\r\n")] = 0;
-        
-        // Quebra a linha em colunas
-        char *token = strtok(linha, ",");
-        int coluna = 0;
-        
-        while (token != NULL && coluna < MAX_COLUNAS) {
-            switch (coluna) {
-                case 0: strncpy(timesCode[count].time, token, MAX_TEXTO); break;
-                case 1: strncpy(timesCode[count].pais, token, MAX_TEXTO); break;
-                case 2: strncpy(timesCode[count].jogador, token, MAX_TEXTO); break;
-                case 3: strncpy(timesCode[count].destaque, token, MAX_TEXTO); break;
-                case 4: strncpy(timesCode[count].dica, token, MAX_TEXTO); break;
-            }
-            token = strtok(NULL, ",");
-            coluna++;
-        }
-        count++;
-    }
-    
-    fclose(arquivo);
-    
-    // escolhe um time aleatório APÓS carregar o CSV
-    int indice = count;
-    if (indice <= 0) {
-        printf("Nenhuma linha lida do CSV.\n");
-        CloseWindow();
-        return 1;
-    }
 
-    int indiceAleatorio = GetRandomValue(0, indice - 1);//gera um valor aleatorio para settar o time
-    TimeCSV timeSorteado = timesCode[indiceAleatorio];
-    //A
-    
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
