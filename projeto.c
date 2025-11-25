@@ -147,26 +147,27 @@ int main(void){
         
         
         
-           do {//vai fazer enquanto
-            printf("\n==== MENU ====\n");
-            printf("1 - Inserir\n");
-            printf("2 - Listar\n");
-            printf("3 - Pesquisar\n");
-            printf("4 - Editar\n");
-            printf("5 - Excluir\n");
-            printf("0 - Sair para o jogo\n");
-            printf("Escolha: ");
+            do {//vai fazer enquanto
+            printf(VERMELHO "\n==== MENU ====\n" RESET);
+            printf(CIANO "1 - Inserir\n" RESET);
+            printf(CIANO "2 - Listar\n" RESET);
+            printf(CIANO "3 - Pesquisar\n" RESET);
+            printf(CIANO "4 - Editar\n" RESET);
+            printf(CIANO "5 - Excluir\n" RESET);
+            printf(CIANO "0 - Sair para o jogo\n" RESET);
+            printf( VERDE "Escolha: " RESET);
             scanf("%d", &opcao);
-            //getchar();
-            
+            setbuf(stdin,NULL);
+        
             switch (opcao) {
                 case 1: inserir(timesCode, &count); break;
                 case 2: listar(timesCode, count); break;
                 case 3: pesquisar(timesCode, count); break;
                 case 4: editar(timesCode, count); break;
                 case 5: excluir(timesCode, &count); break;
+                
             }
-            
+        
         } while (opcao != 0);//for diferente de zero
         
         SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
