@@ -58,39 +58,17 @@ int main(void){
     
     FILE *arquivoBin = fopen("arquivos/save.dat", "rb");
     FILE *arquivo;
-    if (arquivoBin != NULL)
-    {        
-        
-        
-        char linha[512];
-        fgets(linha, sizeof(linha), arquivoBin); // Ignora o cabeçalho
+
+    if (arquivoBin != NULL){         
+        //char linha[512];
+        //fgets(linha, sizeof(linha), arquivoBin); // Ignora o cabeçalho
         
         // Lê linha por linha
-        while (fgets(linha, sizeof(linha), arquivoBin) && count < MAX_LINHAS) {
-            // Remove quebra de linha
-            linha[strcspn(linha, "\r\n")] = 0;
-            
-            // Quebra a linha em colunas
-            char *token = strtok(linha, ",");
-            int coluna = 0;
-            
-            while (token != NULL && coluna < MAX_COLUNAS) {
-                switch (coluna) {
-                    case 1: strncpy(timesCode[count].pais, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
-                    case 0: strncpy(timesCode[count].time, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
-                    case 2: strncpy(timesCode[count].jogador, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
-                    case 3: strncpy(timesCode[count].destaque, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
-                    case 4: strncpy(timesCode[count].dica, token, MAX_TEXTO); fread(&timesCode, sizeof(TimesCSV), 1, arquivo); break;
-                }
-                token = strtok(NULL, ",");
-                coluna++;
-            }
+        while (count < MAX_LINHAS && fread(&timesCode[count], sizeof(TimesCSV), 1, arquivoBin) == 1){
             count++;
         }
-        
         fclose(arquivoBin);
-        
-        
+         
     }else{
         printf("Bem-vindo!");
         arquivo = fopen("arquivos/TimesDicas.csv", "r");
@@ -579,6 +557,19 @@ int main(void){
             EndDrawing();
         //----------------------------------------------------------------------------------
     }//while
+        //-------------------------------------------
+        //Salva os arquivos em binário
+        //-------------------------------------------
+        FILE *bin = fopen("arquivos/save.dat", "wb");
+        if (!bin) {
+            printf("Erro ao abrir arquivo binário para escrita!\n");
+            return 1;
+        }
+        fwrite(timesCode, sizeof(TimesCSV), count, bin);
+        fclose(bin); 
+
+
+        //
         // De-Initialization
         //--------------------------------------------------------------------------------------
         UnloadSound(fxButton);
