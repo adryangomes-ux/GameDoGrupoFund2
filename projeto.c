@@ -167,6 +167,9 @@ int main(void){
     Texture2D telaFacil = LoadTexture("imagens/dust2/dust3.png");
     Texture2D telaMedio = LoadTexture("imagens/anubis/anubis2.png");
     Texture2D telaHard = LoadTexture("imagens/golden/golden3.png");
+    Music musicaFundo = LoadMusicStream("audio/infspawn.wav");
+    PlayMusicStream(musicaFundo);
+    SetMusicVolume(musicaFundo, 0.5f);
 
     //centralizar o texto "times" no eixo x
     int larguraJanela = GetScreenWidth();
@@ -225,7 +228,8 @@ int main(void){
         // Update
         ponteiroMouse = GetMousePosition();
         
-        
+        UpdateMusicStream(musicaFundo);
+
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
         //----------------------------------------------------------------------------------
@@ -573,6 +577,7 @@ int main(void){
         // De-Initialization
         //--------------------------------------------------------------------------------------
         UnloadSound(fxButton);
+        UnloadMusicStream(musicaFundo);
         UnloadSound(acertarPrimeira);
         UnloadTexture(menu);
         fwrite(&timesCode, sizeof(TimesCSV), 1, arquivoBin);
