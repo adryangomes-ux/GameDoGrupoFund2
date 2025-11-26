@@ -28,6 +28,8 @@
 
 #include "raylib.h"
 #include "times.h"
+#include "exportar.h"
+#include "cores.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,11 +43,10 @@
 typedef enum telaAtual {MENU, ESCOLHADIFICULDADE,ESCOLHATIMES} telaAtual;
 typedef enum Dificuldade {FACIL=4, MEDIO, DIFICIL,CREDITOS,CREDITOSBADENDING} Dificuldade;
 
-
 void toLowerCase(char *str) {
     for (int i = 0; str[i]; i++)
     str[i] = (char)tolower(str[i]);
-}        
+}      
 
 int main(void){
     //Armazenar texto salvo
@@ -53,21 +54,37 @@ int main(void){
     int contadorTentativa = 0;
     int pos = 0; //posição atual no buffer
     int opcao;
-    
-    TimesCSV timesCode[MAX_LINHAS];//para poder ler o arquivo csv
+    int capacidade = 10;//usado para vetor dinamico timesCode
+
+    TimesCSV *timesCode = malloc(sizeof(TimesCSV) * capacidade);//para poder ler o arquivo csv
     
     FILE *arquivoBin = fopen("arquivos/save.dat", "rb");
     FILE *arquivo;
 
     if (arquivoBin != NULL){         
         printf(AZUL "--Hello Wordl--\nObrigado por jogar\nNovamente" RESET);
-        while (count < MAX_LINHAS && fread(&timesCode[count], sizeof(TimesCSV), 1, arquivoBin) == 1){
+                capacidade *= 2;
+                timesCode = realloc(timesCode, sizeof(TimesCSV) * capacidade);
+                if (!timesCode) { 
+                    perror("Erro ao realocar"); 
+                    exit(1);
+                 }
+
+        while (fread(&timesCode[count], sizeof(TimesCSV), 1, arquivoBin) == 1) {
             count++;
+            if (count >= capacidade) {
+                capacidade *= 2;
+                TimesCSV *novo = realloc(timesCode, sizeof(TimesCSV) * capacidade);
+                if (!novo) { perror("Erro ao realocar memória"); free(timesCode); fclose(arquivoBin); exit(1); }
+                timesCode = novo;
+            }
         }
-        fclose(arquivoBin);
-         
+
+                fclose(arquivoBin);
+
     }else{
         printf(AZUL "---BEM VINDO!---\nDESEJAMOS BOA SORTE\nPARA VOCE NO JOGO " RESET);
+
 
         arquivo = fopen("arquivos/TimesDicas.csv", "r");
         if (arquivo == NULL) {
@@ -77,19 +94,22 @@ int main(void){
             }//caso der erro
             
             
-            char linha[512];
+        char linha[512];
         fgets(linha, sizeof(linha), arquivo); // Ignora o cabeçalho
         
         // Lê linha por linha
-        while (fgets(linha, sizeof(linha), arquivo) && count < MAX_LINHAS) {
-            // Remove quebra de linha
-            linha[strcspn(linha, "\r\n")] = 0;
-            
-            // Quebra a linha em colunas
+        while (fgets(linha, sizeof(linha), arquivo)) {
+            if (count >= capacidade) {
+                capacidade *= 2;
+                timesCode = realloc(timesCode, sizeof(TimesCSV) * capacidade);
+                if (!timesCode) { perror("Erro de realocação"); exit(1); }
+            }
+
+            linha[strcspn(linha, "\r\n")] = 0; // remove \n ou \r
+
             char *token = strtok(linha, ",");
             int coluna = 0;
-            
-            while (token != NULL && coluna < MAX_COLUNAS) {
+            while (token != NULL && coluna < 5) {
                 switch (coluna) {
                     case 0: strncpy(timesCode[count].time, token, MAX_TEXTO); break;
                     case 1: strncpy(timesCode[count].pais, token, MAX_TEXTO); break;
@@ -102,7 +122,7 @@ int main(void){
             }
             count++;
         }
-        
+
         fclose(arquivo);
 
     }
@@ -128,17 +148,19 @@ int main(void){
             printf(CIANO "3 - Pesquisar\n" RESET);
             printf(CIANO "4 - Editar\n" RESET);
             printf(CIANO "5 - Excluir\n" RESET);
+            printf(CIANO "6 - Exportar em CSV\n" RESET);
             printf(CIANO "0 - Sair para o jogo\n" RESET);
             printf( VERDE "Escolha: " RESET);
             scanf("%d", &opcao);
             setbuf(stdin,NULL);
         
             switch (opcao) {
-                case 1: inserir(timesCode, &count); break;
+                case 1: timesCode = inserir(timesCode, &count, &capacidade); break;
                 case 2: listar(timesCode, count); break;
                 case 3: pesquisar(timesCode, count); break;
                 case 4: editar(timesCode, count); break;
                 case 5: excluir(timesCode, &count); break;
+                case 6: ExportarCSV(timesCode, count); break;
                 
             }
         
@@ -210,27 +232,27 @@ int main(void){
     //outras variaveis booleanas
     bool estadoMenu = false;
     bool acertou = false;
-    
     bool enviar = false;
+    
     
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {300, screenHeight*0.48, 680, 70};
     Rectangle botaoVoltar = {970, 870, 200, 70};
-    
     Rectangle botaoFacil = {xFacil - 43, 230, 200, 70};
     Rectangle botaoMedio = {xMedio - 38, 385, 200, 70};
     Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
     
     
+    
     int indiceAleatorio = GetRandomValue(0, count - 1);//gera um valor aleatorio para settar o time
     TimesCSV timeSorteado = timesCode[indiceAleatorio];
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    SetTargetFPS(60);// Set our game to run at 60 frames-per-second
     
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        // Update
+        // Update - tudo que fica constantemente atualizando
         ponteiroMouse = GetMousePosition();
         
         UpdateMusicStream(musicaFundo);
@@ -493,7 +515,7 @@ int main(void){
                                     }//if para voltar ao menu
 
 
-                                    DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
+                                    //DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK); HACK DE VER O TIME SORTEADO
                                     DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
                                     DrawText(escritaTimes, 300, 10, 40, BLACK);
                                     DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
@@ -532,7 +554,7 @@ int main(void){
                                         
 
                                         
-                                        DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
+                                        //DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
                                         DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
                                         DrawText(escritaTimes, 300, 10, 40, BLACK);
                                         DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
@@ -568,7 +590,7 @@ int main(void){
                                         } 
 
 
-                                    DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, RED);
+                                    //DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, RED);
                                     DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
                                     DrawText(escritaTimes, 300, 10, 40, RED);
                                     DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
