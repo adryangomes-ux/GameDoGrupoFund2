@@ -174,7 +174,6 @@ int main(void){
     InitWindow(screenWidth, screenHeight, "bad fallen");
     InitAudioDevice();      // Initialize audio device
     //sons e texturas
-    Texture2D menu = LoadTexture("imagens/fallen.jpg");
     Texture2D telaDif = LoadTexture("imagens/ancient/ancient1.png");
     Texture2D telaFacil = LoadTexture("imagens/dust2/dust3.png");
     Texture2D telaMedio = LoadTexture("imagens/anubis/anubis2.png");
@@ -189,6 +188,13 @@ int main(void){
     SetSoundVolume(lesgo, 0.25f);
     PlayMusicStream(musicaFundo);
     SetMusicVolume(musicaFundo, 0.5f);
+
+    Texture2D backgrounds[4];
+    backgrounds[0] = LoadTexture("imagens/fallen.jpg");
+    backgrounds[1] = LoadTexture("imagens/bdfallen.jpg");
+    backgrounds[2] = LoadTexture("imagens/bdfallen2.jpg");
+    backgrounds[3] = LoadTexture("imagens/bdfallen3.jpg");
+    int currentBgIndex = 0;
 
 
     //centralizar o texto "times" no eixo x
@@ -241,6 +247,7 @@ int main(void){
     Rectangle botaoFacil = {xFacil - 43, 230, 200, 70};
     Rectangle botaoMedio = {xMedio - 38, 385, 200, 70};
     Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
+    Rectangle btnTrocarFundoRect = { 50, screenHeight - 100, 200, 50 };//botão de trocar o background do menu
     
     
     
@@ -262,6 +269,21 @@ int main(void){
         // TODO: Update your variables here
         //----------------------------------------------------------------------------------
         
+        Vector2 mousePoint = GetMousePosition();
+        bool mouseOverTrocarFundo = CheckCollisionPointRec(mousePoint, btnTrocarFundoRect);
+
+            if (telaJogo == MENU && mouseOverTrocarFundo)
+            {
+                if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                currentBgIndex++;
+                if (currentBgIndex >= 4)
+                {
+                    currentBgIndex = 0;
+                }
+            }
+            }
+
         // --- BOTÃO 1 (TIMES) ---
         if (IsKeyPressed(KEY_SPACE) && estadoMenu == false)
         {
@@ -437,11 +459,12 @@ int main(void){
         
         switch (telaJogo){
                 case MENU:
-                //faz a imagem cobrir a janela toda
-                DrawTexturePro(menu,
-                    (Rectangle){ 0, 0, menu.width, menu.height },
-                    (Rectangle){ 0, 0, screenWidth, screenHeight },
-                    (Vector2){ 0, 0 }, 0.0f, WHITE);
+                Texture2D textureAtual = backgrounds[currentBgIndex];
+                DrawTexturePro(textureAtual,
+                (Rectangle){ 0, 0, (float)textureAtual.width, (float)textureAtual.height },
+                (Rectangle){ 0, 0, (float)screenWidth, (float)screenHeight },
+                (Vector2){ 0, 0 }, 0.0f, WHITE);
+
                     
                     //retangulo redondo pra ficar em volta do texto do menu
                     DrawRectangleRounded((Rectangle)botao1, 2, 3, BLACK);
@@ -449,7 +472,11 @@ int main(void){
                     //texto do menu
                     DrawText("BAD FALLEN", xMenu, screenHeight*0.25, 75, RED);
                     DrawText("PRESSIONE ESPAÇO PARA INICIAR", x1, screenHeight*0.5, 35, textoBotao1);
-                    
+
+                    Color corBotaoFundo = mouseOverTrocarFundo ? DARKGRAY : BLACK;
+                    DrawRectangleRounded(btnTrocarFundoRect, 0.3, 4, corBotaoFundo);
+                    DrawText("Trocar Fundo", (int)btnTrocarFundoRect.x + 30, (int)btnTrocarFundoRect.y + 15, 20, WHITE);
+
                     break;
                     
                     case ESCOLHADIFICULDADE:
@@ -630,9 +657,7 @@ int main(void){
                             }
             //switch
             DrawFPS(0,1);
-
             EndDrawing();
-
     }//while
 
         //-------------------------------------------
@@ -642,17 +667,23 @@ int main(void){
         fwrite(timesCode, sizeof(TimesCSV), count, arquivoBin);
         fclose(arquivoBin);
 
-
         //
         // De-Initialization
         //--------------------------------------------------------------------------------------
         UnloadSound(fxButton);
         UnloadMusicStream(musicaFundo);
         UnloadSound(acertarPrimeira);
-        UnloadTexture(menu);
+        UnloadTexture(telaDif);
+        UnloadTexture(telaFacil);
+        UnloadTexture(telaMedio);
+        UnloadTexture(telaHard);
+        UnloadTexture(telaCreditos);
+        UnloadTexture(telaPerdedor);
+        for (int i = 0; i < 4; i++) {
+            UnloadTexture(backgrounds[i]);
+        }
         CloseWindow();        // Close window and OpenGL context
         //--------------------------------------------------------------------------------------
         
         return 0;
-        
 }//make
