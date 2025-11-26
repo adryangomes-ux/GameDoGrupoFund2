@@ -153,7 +153,8 @@ int main(void){
     InitAudioDevice();      // Initialize audio device
     //sons e texturas
     Texture2D menu = LoadTexture("imagens/fallen.jpg");
-    Sound fxButton = LoadSound("audio/selecao.wav"); 
+    Sound fxButton = LoadSound("audio/selecao.wav");
+    Sound clickMouseLeftBoton = LoadSound("audio/usp.wav");
     Sound acertarPrimeira = LoadSound("audio/grafite.wav");
     Sound lesgo = LoadSound("audio/okletsgo.wav");
     SetSoundVolume(lesgo, 0.25f);
@@ -243,7 +244,11 @@ int main(void){
             telaJogo = ESCOLHADIFICULDADE;
             PlaySound(lesgo);
         }
-        else estadoBotao1 = 0;        
+        else estadoBotao1 = 0;   
+        // ----BOTAO PARA SAIR O SOM DO CLICK ---------
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                PlaySound(clickMouseLeftBoton);
+            }     
         
         
         //BOTAO DIFICULDADE FACIL
