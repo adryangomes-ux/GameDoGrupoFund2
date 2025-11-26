@@ -60,17 +60,15 @@ int main(void){
     FILE *arquivo;
 
     if (arquivoBin != NULL){         
-        //char linha[512];
-        //fgets(linha, sizeof(linha), arquivoBin); // Ignora o cabeçalho
-        
-        // Lê linha por linha
+        printf(AZUL "--Hello Wordl--\nObrigado por jogar\nNovamente" RESET);
         while (count < MAX_LINHAS && fread(&timesCode[count], sizeof(TimesCSV), 1, arquivoBin) == 1){
             count++;
         }
         fclose(arquivoBin);
          
     }else{
-        printf("Bem-vindo!");
+        printf(AZUL "---BEM VINDO!---\nDESEJAMOS BOA SORTE\nPARA VOCE NO JOGO " RESET);
+
         arquivo = fopen("arquivos/TimesDicas.csv", "r");
         if (arquivo == NULL) {
                 printf("Erro ao abrir o arquivo CSV!\n");
@@ -119,13 +117,11 @@ int main(void){
             return 1;
         }
         
-        int indiceAleatorio = GetRandomValue(0, indice - 1);//gera um valor aleatorio para settar o time
-        TimesCSV timeSorteado = timesCode[indiceAleatorio];
         //--------------------------------------------------------------------------------------
         
         
         
-            do {//vai fazer enquanto
+        do {//vai fazer enquanto
             printf(VERMELHO "\n==== MENU ====\n" RESET);
             printf(CIANO "1 - Inserir\n" RESET);
             printf(CIANO "2 - Listar\n" RESET);
@@ -148,10 +144,8 @@ int main(void){
         
         } while (opcao != 0);//for diferente de zero
         
-        SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    
-    // Initialization
-    //--------------------------------------------------------------------------------------
+        // Initialization
+        //--------------------------------------------------------------------------------------
     const int screenWidth = 1280;
     const int screenHeight = 960;
 
@@ -212,8 +206,9 @@ int main(void){
     //outras variaveis booleanas
     bool estadoMenu = false;
     bool acertou = false;
+    
     bool enviar = false;
-
+    
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {300, screenHeight*0.48, 680, 70};
     Rectangle botaoVoltar = {970, 870, 200, 70};
@@ -222,7 +217,10 @@ int main(void){
     Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
     
     
-
+    int indiceAleatorio = GetRandomValue(0, count - 1);//gera um valor aleatorio para settar o time
+    TimesCSV timeSorteado = timesCode[indiceAleatorio];
+    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
