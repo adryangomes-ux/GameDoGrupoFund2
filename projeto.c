@@ -38,8 +38,8 @@
 // Program main entry point
 //------------------------------------------------------------------------------------
 
-typedef enum telaAtual {MENU, ESCOLHADIFICULDADE,ESCOLHATIMES, CREDITOS} telaAtual;
-typedef enum Dificuldade {FACIL=1, MEDIO, DIFICIL} Dificuldade;
+typedef enum telaAtual {MENU, ESCOLHADIFICULDADE,ESCOLHATIMES} telaAtual;
+typedef enum Dificuldade {FACIL=4, MEDIO, DIFICIL,CREDITOS,CREDITOSBADENDING} Dificuldade;
 
 
 void toLowerCase(char *str) {
@@ -60,16 +60,15 @@ int main(void){
     FILE *arquivo;
 
     if (arquivoBin != NULL){         
-        //char linha[512];
-        //fgets(linha, sizeof(linha), arquivoBin); // Ignora o cabeçalho
-        
-        // Lê linha por linha
+        printf(AZUL "--Hello Wordl--\nObrigado por jogar\nNovamente" RESET);
         while (count < MAX_LINHAS && fread(&timesCode[count], sizeof(TimesCSV), 1, arquivoBin) == 1){
             count++;
         }
         fclose(arquivoBin);
+         
     }else{
-        printf("Bem-vindo!");
+        printf(AZUL "---BEM VINDO!---\nDESEJAMOS BOA SORTE\nPARA VOCE NO JOGO " RESET);
+
         arquivo = fopen("arquivos/TimesDicas.csv", "r");
         if (arquivo == NULL) {
                 printf("Erro ao abrir o arquivo CSV!\n");
@@ -105,8 +104,8 @@ int main(void){
         }
         
         fclose(arquivo);
-    }
 
+    }
     char escritaTimes[MAX_TEXTO] = "\0";
     
         
@@ -118,13 +117,11 @@ int main(void){
             return 1;
         }
         
-        int indiceAleatorio = GetRandomValue(0, indice - 1);//gera um valor aleatorio para settar o time
-        TimesCSV timeSorteado = timesCode[indiceAleatorio];
         //--------------------------------------------------------------------------------------
         
         
         
-            do {//vai fazer enquanto
+        do {//vai fazer enquanto
             printf(VERMELHO "\n==== MENU ====\n" RESET);
             printf(CIANO "1 - Inserir\n" RESET);
             printf(CIANO "2 - Listar\n" RESET);
@@ -147,10 +144,8 @@ int main(void){
         
         } while (opcao != 0);//for diferente de zero
         
-        SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    
-    // Initialization
-    //--------------------------------------------------------------------------------------
+        // Initialization
+        //--------------------------------------------------------------------------------------
     const int screenWidth = 1280;
     const int screenHeight = 960;
 
@@ -158,15 +153,18 @@ int main(void){
     InitAudioDevice();      // Initialize audio device
     //sons e texturas
     Texture2D menu = LoadTexture("imagens/fallen.jpg");
-    Sound fxButton = LoadSound("audio/selecao.wav"); 
-    Sound acertarPrimeira = LoadSound("audio/grafite.wav");
-    Sound lesgo = LoadSound("audio/okletsgo.wav");
-    SetSoundVolume(lesgo, 0.25f);
     Texture2D telaDif = LoadTexture("imagens/ancient/ancient1.png");
     Texture2D telaFacil = LoadTexture("imagens/dust2/dust3.png");
     Texture2D telaMedio = LoadTexture("imagens/anubis/anubis2.png");
     Texture2D telaHard = LoadTexture("imagens/golden/golden3.png");
+    Texture2D telaCreditos = LoadTexture("imagens/bdfallen2.jpg");
+    Texture2D telaPerdedor = LoadTexture("imagens/bdfallen.jpg");
     Music musicaFundo = LoadMusicStream("audio/infspawn.wav");
+    Sound fxButton = LoadSound("audio/selecao.wav");
+    Sound clickMouseLeftBoton = LoadSound("audio/usp.wav");
+    Sound acertarPrimeira = LoadSound("audio/grafite.wav");
+    Sound lesgo = LoadSound("audio/okletsgo.wav");
+    SetSoundVolume(lesgo, 0.25f);
     PlayMusicStream(musicaFundo);
     SetMusicVolume(musicaFundo, 0.5f);
 
@@ -177,6 +175,8 @@ int main(void){
     int perdedor = MeasureText("VOCE É PESSIMO",60);
     int x1 = (larguraJanela - larguraTexto1) / 2;
     int xPerdedor = ((larguraJanela - perdedor) / 2) - 120;
+    int xGanhador = ((larguraJanela - perdedor) / 2) - 120;
+
     
     
     //centraliza os textos da tela de escolha de dificuldade
@@ -188,8 +188,7 @@ int main(void){
     int xFacil = (larguraJanela - larguraTextoFacil) / 2;
     int xMedio = (larguraJanela - larguraTextoMedio) / 2;
     int xDificil = (larguraJanela - larguraTextoDificil) / 2;
-    int larguraTextoCreditos = MeasureText("CRÉDITOS", 60);
-    int xCreditos = (larguraJanela - larguraTextoCreditos) / 2;
+
     
     
     //centralizar o titulo do jogo
@@ -211,17 +210,22 @@ int main(void){
     //outras variaveis booleanas
     bool estadoMenu = false;
     bool acertou = false;
+    
     bool enviar = false;
-
+    
     Vector2 ponteiroMouse = {0.0f, 0.0f};
     Rectangle botao1 = {300, screenHeight*0.48, 680, 70};
     Rectangle botaoVoltar = {970, 870, 200, 70};
+    
     Rectangle botaoFacil = {xFacil - 43, 230, 200, 70};
     Rectangle botaoMedio = {xMedio - 38, 385, 200, 70};
     Rectangle botaoDificil = {xDificil - 27, 533, 200, 70};
     
     
-
+    int indiceAleatorio = GetRandomValue(0, count - 1);//gera um valor aleatorio para settar o time
+    TimesCSV timeSorteado = timesCode[indiceAleatorio];
+    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    
     
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -244,7 +248,11 @@ int main(void){
             telaJogo = ESCOLHADIFICULDADE;
             PlaySound(lesgo);
         }
-        else estadoBotao1 = 0;        
+        else estadoBotao1 = 0;   
+        // ----BOTAO PARA SAIR O SOM DO CLICK ---------
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                PlaySound(clickMouseLeftBoton);
+            }     
         
         
         //BOTAO DIFICULDADE FACIL
@@ -317,7 +325,7 @@ int main(void){
             
             if(!acertou){
 
-                int tecla = GetCharPressed();
+                int tecla = GetCharPressed();//captura tecla por tecla
                 
                 while (tecla > 0){
                     if ((tecla >= 32) && (tecla <=125) && (pos < 22)){
@@ -337,13 +345,12 @@ int main(void){
                 }                    
                 
                 
-                if (IsKeyPressed(KEY_ENTER))
-                {
+                if (IsKeyPressed(KEY_ENTER)){
                     enviar = true;
                 }
                 
-                if (enviar)
-                {
+                if (enviar){
+
                     char chuteTemp[MAX_TEXTO];
                     strcpy(chuteTemp, escritaTimes);
                     toLowerCase(chuteTemp);
@@ -448,155 +455,170 @@ int main(void){
                     break;
                     
                     case ESCOLHATIMES:
-                        break;
-            case CREDITOS:
-                ClearBackground(LIGHTGRAY);
-                DrawText("CRÉDITOS", xCreditos, 20, 60, RED);
+                                    switch (dificuldade)
+                                    {
+                                        case FACIL: {
 
-                break;
+                                        DrawTexturePro(telaFacil,
+                                        (Rectangle){ 0, 0, telaFacil.width, telaFacil.height },
+                                        (Rectangle){ 0, 0, screenWidth, screenHeight },
+                                        (Vector2){ 0, 0 }, 0.0f, WHITE);
 
-            
-            default:
-                break;
-            
-            }//switch
+                                        DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);//desenha quantidade de tentativas
+                                        
+                                        if (acertou && contadorTentativa == 0){
+                                            
+                                            if(acertou){ dificuldade = CREDITOS;}
+                                        }else if (acertou && contadorTentativa > 0){//caso não for de primeira
+                                          
+                                            if(acertou){ dificuldade = CREDITOS;}
+                                        }
+                                        
+                                        
+                                        if (contadorTentativa == 1)
+                                        {
+                                            DrawText(timesCode[indiceAleatorio].pais, 80, 600, 40, BLACK);
+                                        }else if (contadorTentativa == 2)
+                                        {
+                                            DrawText(timesCode[indiceAleatorio].jogador, 80, 650, 40, BLACK);
+                                        }else if (contadorTentativa == 3)
+                                        {
+                                            DrawText(timesCode[indiceAleatorio].destaque, 80, 700, 40, BLACK);
+                                        }else if (contadorTentativa == 4)
+                                        {
+                                            DrawText(timesCode[indiceAleatorio].dica, 80, 750, 32, BLACK);
+                                        }else if(contadorTentativa == 5 && acertou == false){
+                                            
+                                            if(contadorTentativa == 5){ dificuldade = CREDITOSBADENDING;}
+                                    }//if para voltar ao menu
 
 
-                switch (dificuldade){
-                
-                    case FACIL:
+                                    DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
+                                    DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
+                                    DrawText(escritaTimes, 300, 10, 40, BLACK);
+                                    DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
+                                    DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
+                                        break;
+                                    }//case FACIL
 
-                    DrawTexturePro(telaFacil,
-                    (Rectangle){ 0, 0, telaFacil.width, telaFacil.height },
-                    (Rectangle){ 0, 0, screenWidth, screenHeight },
-                    (Vector2){ 0, 0 }, 0.0f, WHITE);
+                                    case MEDIO: 
 
-                    DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);//desenha quantidade de tentativas
+                                    DrawTexturePro(telaMedio,
+                                            (Rectangle){ 0, 0, telaMedio.width, telaMedio.height },
+                                            (Rectangle){ 0, 0, screenWidth, screenHeight },
+                                            (Vector2){ 0, 0 }, 0.0f, WHITE);
+
+
+                                        if (acertou && contadorTentativa == 0){
+                                            
+                                            if(acertou){ dificuldade = CREDITOS;}
+                                        }else if (acertou && contadorTentativa > 0){//caso não for de primeira
+                                            
+                                            if(acertou){ dificuldade = CREDITOS;}
+                                        }
+                                        
+
+                                        
+                                        if (contadorTentativa == 1){
+                                            DrawText(timesCode[indiceAleatorio].pais, 80, 600, 40, BLACK);
+                                        }else if (contadorTentativa == 2){
+                                            DrawText(timesCode[indiceAleatorio].jogador, 80, 650, 40, BLACK);
+                                        }else if (contadorTentativa == 3){
+                                            DrawText(timesCode[indiceAleatorio].destaque, 80, 700, 40, BLACK);
+                                        }else if (contadorTentativa == 4 && acertou == false){
+                                            
+                                            if(contadorTentativa == 4){ dificuldade = CREDITOSBADENDING;}
+                                        }//caso perda
+                                        
+
+                                        
+                                        DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, BLACK);
+                                        DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
+                                        DrawText(escritaTimes, 300, 10, 40, BLACK);
+                                        DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
+                                        DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
+                                        
+                                        break;
+
+                            //-----------------------------------------------------------------------*-----------------
+                                    case DIFICIL: {
+                                    
+                                    DrawTexturePro(telaHard,
+                                            (Rectangle){ 0, 0, telaHard.width, telaHard.height },
+                                            (Rectangle){ 0, 0, screenWidth, screenHeight },
+                                            (Vector2){ 0, 0 }, 0.0f, WHITE);
+
+                                    //captura as teclas
+                                    DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);
+                                        if (acertou && contadorTentativa == 0){
+                                           
+                                            if(acertou){ dificuldade = CREDITOS;}
+                                        }else if (acertou && contadorTentativa > 0){//caso não for de primeira
                     
-                    if (acertou && contadorTentativa == 0)
-                    {
-                        DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
-                    }else if (acertou && contadorTentativa > 0)
-                    {
-                        DrawText("Parabéns, você acertou!", 300, 300, 40, RED);
-                    }                            
-                    
-                    if (contadorTentativa == 1)
-                    {
-                        DrawText(timesCode[indiceAleatorio].pais, 80, 600, 40, BLACK);
-                    }else if (contadorTentativa == 2)
-                    {
-                        DrawText(timesCode[indiceAleatorio].jogador, 80, 650, 40, BLACK);
-                    }else if (contadorTentativa == 3)
-                    {
-                        DrawText(timesCode[indiceAleatorio].destaque, 80, 700, 40, BLACK);
-                    }else if (contadorTentativa == 4)
-                    {
-                        DrawText(timesCode[indiceAleatorio].dica, 80, 750, 32, BLACK);
-                    }else if(contadorTentativa == 5 && acertou == false){
-                        DrawText("VOCE É PESSIMO...",xPerdedor,300,80,BLUE);
-                    
-                        // int horario = GetTime();
-
-                //     if (horario > 5){
-                    //    DrawText("VOCE É MUITO PESSIMO...",xPerdedor,400,80,BLUE);
-                        
-                    //  estadoMenu = false;
-                    //  telaJogo = MENU;
-                    //// contadorTentativa = 0;
-                    // }
-                        
-                }//if para voltar ao menu
+                                            if(acertou){ dificuldade = CREDITOS;}
+                                        }
+                                        
+                                        if (contadorTentativa == 1){
+                                            DrawText(timesCode[indiceAleatorio].pais, 80, 600, 40, BLACK);
+                                        }else if (contadorTentativa == 2){
+                                            DrawText(timesCode[indiceAleatorio].jogador, 80, 650, 40, BLACK);
+                                        }else if (contadorTentativa == 3 && acertou == false){
+                                            
+                                            if(contadorTentativa == 3){ dificuldade = CREDITOSBADENDING;}
+                                        } 
 
 
-                DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
-                DrawText(escritaTimes, 300, 10, 40, BLACK);
-                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
-                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
-                    break;
-                
-                case MEDIO:
+                                    DrawText(TextFormat("Time sorteado: %s", timeSorteado.time), 100, 100, 30, RED);
+                                    DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
+                                    DrawText(escritaTimes, 300, 10, 40, RED);
+                                    DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
+                                    DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
 
-                DrawTexturePro(telaMedio,
-                        (Rectangle){ 0, 0, telaMedio.width, telaMedio.height },
-                        (Rectangle){ 0, 0, screenWidth, screenHeight },
-                        (Vector2){ 0, 0 }, 0.0f, WHITE);
+                                    break;
+                                    }//case dificil
 
-                if (acertou && contadorTentativa == 0)
-                {
-                    DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
-                }else if (acertou && contadorTentativa > 0)
-                {
-                    DrawText("Parabéns, você acertou!", 300, 300, 40, RED);
-                }                            
+                                    case CREDITOS:
+                                            DrawTexturePro(telaCreditos,
+                                            (Rectangle){ 0, 0, telaHard.width, telaHard.height },
+                                            (Rectangle){ 0, 0, screenWidth, screenHeight },
+                                            (Vector2){ 0, 0 }, 0.0f, WHITE);
 
-                if (contadorTentativa == 1)
-                {
-                    DrawText(timesCode[indiceAleatorio].pais, 80, 600, 40, BLACK);
-                }else if (contadorTentativa == 2)
-                {
-                    DrawText(timesCode[indiceAleatorio].jogador, 80, 650, 40, BLACK);
-                }else if (contadorTentativa == 3)
-                {
-                    DrawText(timesCode[indiceAleatorio].destaque, 80, 700, 40, BLACK);
-                }else if (contadorTentativa == 4)
-                {
-                    DrawText(timesCode[indiceAleatorio].dica, 80, 750, 32, BLACK);
-                }else if(contadorTentativa == 5 && acertou == false){
-                    DrawText("VOCE É PESSIMO...",xPerdedor,300,80,BLUE);
 
-                    
-                DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
-                DrawText(escritaTimes, 300, 10, 40, BLACK);
-                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
-                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
-                    break;
+                                        if (acertou && contadorTentativa == 0){
+                                            DrawText("Parabéns!!\nvocê acertou de primeira!", xGanhador, 180, 80, RED);
+                                            DrawText("Obrigado por Jogar!", xGanhador, 700, 80, GREEN);
+                                        }else if (acertou && contadorTentativa > 0){//caso não for de primeira
+                                            DrawText("Parabéns, você acertou!", xGanhador, 180, 80, RED);
+                                            DrawText("Obrigado por Jogar!", xGanhador, 700, 80, GREEN);
+                                        }
 
-                case DIFICIL:
-                
-                DrawTexturePro(telaHard,
-                        (Rectangle){ 0, 0, telaHard.width, telaHard.height },
-                        (Rectangle){ 0, 0, screenWidth, screenHeight },
-                        (Vector2){ 0, 0 }, 0.0f, WHITE);
+                                    break;
+                                    case CREDITOSBADENDING:
+                                            DrawTexturePro(telaPerdedor,
+                                            (Rectangle){ 0, 0, telaHard.width, telaHard.height },
+                                            (Rectangle){ 0, 0, screenWidth, screenHeight },
+                                            (Vector2){ 0, 0 }, 0.0f, WHITE);
 
-                //captura as teclas
-                DrawText(TextFormat("%02d", contadorTentativa), 400, 800, 45, LIGHTGRAY);
-
-                if (acertou && contadorTentativa == 0)
-                {
-                    DrawText("Parabéns, você acertou de primeira!", 300, 300, 40, RED);
-                }else if (acertou && contadorTentativa > 0)
-                {
-                    DrawText("Parabéns, você acertou!", 300, 300, 40, RED);
-                }                            
-                
-                    
-                DrawText("Digite um time:", 20, 10, 40, LIGHTGRAY);
-                DrawText(escritaTimes, 300, 10, 40, RED);
-                DrawRectangleRounded((Rectangle)botaoVoltar, 2, 3, BLACK);
-                DrawText("VOLTAR", 996, 890, 35, textoBotaoVoltar);
-
-                break;
-            default:
-                break;
-            }
-
+                                    DrawText("VOCE É RUIM DE MAIS...",xPerdedor,180,80,BLUE);
+                                    DrawText("Mesmo assim obrigado \npor jogar",xPerdedor,700,80,BLUE);
+                                    break;
+                        }//fecha escolha times
+                            default:
+                                break;
+                            }
+            //switch
             DrawFPS(0,1);
 
             EndDrawing();
-        //----------------------------------------------------------------------------------
+
     }//while
-       
+
         //-------------------------------------------
         //Salva os arquivos em binário
         //-------------------------------------------
-        FILE *bin = fopen("arquivos/save.dat", "wb");
-        if (!bin) {
-            printf("Erro ao abrir arquivo binário para escrita!\n");
-            return 1;
-        }
-        fwrite(timesCode, sizeof(TimesCSV), count, bin);
-        fclose(bin); 
+        arquivoBin = fopen("arquivos/save.dat", "wb");
+        fwrite(timesCode, sizeof(TimesCSV), count, arquivoBin);
+        fclose(arquivoBin);
 
 
         //
@@ -606,9 +628,6 @@ int main(void){
         UnloadMusicStream(musicaFundo);
         UnloadSound(acertarPrimeira);
         UnloadTexture(menu);
-        fwrite(&timesCode, sizeof(TimesCSV), 1, arquivoBin);
-        arquivo = fopen("arquivos/save.dat","wb");
-        fclose(arquivoBin);
         CloseWindow();        // Close window and OpenGL context
         //--------------------------------------------------------------------------------------
         
